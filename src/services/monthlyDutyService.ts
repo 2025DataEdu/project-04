@@ -40,7 +40,10 @@ export const assignMonthlyDuties = async (
       const result = await createDutyAssignment(dateString, '평일야간', primary.일련번호, backup.일련번호);
 
       if (result.data) {
-        assignments.push(result.data);
+        assignments.push({
+          ...result.data,
+          duty_type: result.data.duty_type as '평일야간' | '주말주간' | '주말야간'
+        });
         workerAssignmentCounts[primary.일련번호]++;
         workerAssignmentCounts[backup.일련번호]++;
       }
@@ -56,7 +59,10 @@ export const assignMonthlyDuties = async (
       const dayResult = await createDutyAssignment(dateString, '주말주간', dayPrimary.일련번호, dayBackup.일련번호);
 
       if (dayResult.data) {
-        assignments.push(dayResult.data);
+        assignments.push({
+          ...dayResult.data,
+          duty_type: dayResult.data.duty_type as '평일야간' | '주말주간' | '주말야간'
+        });
         workerAssignmentCounts[dayPrimary.일련번호]++;
         workerAssignmentCounts[dayBackup.일련번호]++;
       }
@@ -69,7 +75,10 @@ export const assignMonthlyDuties = async (
       const nightResult = await createDutyAssignment(dateString, '주말야간', nightPrimary.일련번호, nightBackup.일련번호);
 
       if (nightResult.data) {
-        assignments.push(nightResult.data);
+        assignments.push({
+          ...nightResult.data,
+          duty_type: nightResult.data.duty_type as '평일야간' | '주말주간' | '주말야간'
+        });
         workerAssignmentCounts[nightPrimary.일련번호]++;
         workerAssignmentCounts[nightBackup.일련번호]++;
       }
