@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Worker, DutyAssignment } from '@/types/duty';
+import { Worker, DutyAssignment, DutyAssignmentWithWorkers } from '@/types/duty';
 import { toast } from 'sonner';
 
 export const useDutyAssignment = () => {
@@ -137,32 +137,66 @@ export const useDutyAssignment = () => {
     }
   };
 
-  const getDutyAssignments = async (startDate?: string, endDate?: string) => {
-    let query = supabase
-      .from('duty_assignments')
-      .select(`
-        *,
-        primary_worker:근로자 리스트!duty_assignments_primary_worker_id_fkey(*),
-        backup_worker:근로자 리스트!duty_assignments_backup_worker_id_fkey(*)
-      `)
-      .order('assignment_date', { ascending: true });
+  const getDutyAssignments = async (startDate?: string, endDate?: string): Promise<DutyAssignmentWithWorkers[]> => {
+    try {
+      // 먼저 당직 배정 정보를 가져옵니다
+      let assignmentQuery = supabase
+        .from('duty_assignments')
+        .select('*')
+        .order('assignment_date', { ascending: true });
 
-    if (startDate) {
-      query = query.gte('assignment_date', startDate);
-    }
-    if (endDate) {
-      query = query.lte('assignment_date', endDate);
-    }
+      if (startDate) {
+        assignmentQuery = assignmentQuery.gte('assignment_date', startDate);
+      }
+      if (endDate) {
+        assignmentQuery = assignmentQuery.lte('assignment_date', endDate);
+      }
 
-    const { data, error } = await query;
+      const { data: assignments, error: assignmentError } = await assignmentQuery;
 
-    if (error) {
-      console.error('Error fetching duty assignments:', error);
+      if (assignmentError) {
+        console.error('Error fetching duty assignments:', assignmentError);
+        toast.error('당직 배정 목록을 불러오는데 실패했습니다.');
+        return [];
+      }
+
+      if (!assignments || assignments.length === 0) {
+        return [];
+      }
+
+      // 별도로 근로자 정보를 가져옵니다
+      const { data: workers, error: workersError } = await supabase
+        .from('근로자 리스트')
+        .select('*');
+
+      if (workersError) {
+        console.error('Error fetching workers:', workersError);
+        toast.error('근로자 목록을 불러오는데 실패했습니다.');
+        return [];
+      }
+
+      // 수동으로 조인합니다
+      const assignmentsWithWorkers: DutyAssignmentWithWorkers[] = assignments.map(assignment => {
+        const primaryWorker = workers?.find(w => w.일련번호 === assignment.primary_worker_id);
+        const backupWorker = workers?.find(w => w.일련번호 === assignment.backup_worker_id);
+
+        if (!primaryWorker || !backupWorker) {
+          console.warn('Worker not found for assignment:', assignment);
+        }
+
+        return {
+          ...assignment,
+          primary_worker: primaryWorker || {} as Worker,
+          backup_worker: backupWorker || {} as Worker
+        };
+      });
+
+      return assignmentsWithWorkers;
+    } catch (error) {
+      console.error('Error in getDutyAssignments:', error);
       toast.error('당직 배정 목록을 불러오는데 실패했습니다.');
       return [];
     }
-
-    return data || [];
   };
 
   return {
