@@ -9,7 +9,7 @@ export const useDutyAssignment = () => {
 
   const getAvailableWorkers = async (): Promise<Worker[]> => {
     const { data, error } = await supabase
-      .from('근로자 리스트')
+      .from('worker_list')
       .select('*')
       .neq('제외여부', 'Y');
 
@@ -166,7 +166,7 @@ export const useDutyAssignment = () => {
 
       // 별도로 근로자 정보를 가져옵니다
       const { data: workers, error: workersError } = await supabase
-        .from('근로자 리스트')
+        .from('worker_list')
         .select('*');
 
       if (workersError) {
@@ -186,6 +186,7 @@ export const useDutyAssignment = () => {
 
         return {
           ...assignment,
+          duty_type: assignment.duty_type as '평일야간' | '주말주간' | '주말야간',
           primary_worker: primaryWorker || {} as Worker,
           backup_worker: backupWorker || {} as Worker
         };
