@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileText, ChevronLeft, ChevronRight } from "lucide-react";
-
 interface DutyReportHeaderProps {
   selectedMonth: string;
   selectedDate: string;
@@ -11,7 +9,6 @@ interface DutyReportHeaderProps {
   onMonthNavigate: (direction: 'prev' | 'next') => void;
   onDateChange: (date: string) => void;
 }
-
 export const DutyReportHeader: React.FC<DutyReportHeaderProps> = ({
   selectedMonth,
   selectedDate,
@@ -19,8 +16,7 @@ export const DutyReportHeader: React.FC<DutyReportHeaderProps> = ({
   onMonthNavigate,
   onDateChange
 }) => {
-  return (
-    <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+  return <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
       <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-t-lg">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -28,19 +24,13 @@ export const DutyReportHeader: React.FC<DutyReportHeaderProps> = ({
             당직 보고서
           </div>
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => onMonthNavigate('prev')}
-              className="p-1 hover:bg-white/20 rounded"
-            >
+            <button onClick={() => onMonthNavigate('prev')} className="p-1 hover:bg-white/20 rounded">
               <ChevronLeft className="h-5 w-5" />
             </button>
             <span className="text-lg font-semibold min-w-[120px] text-center">
               {selectedMonth}
             </span>
-            <button
-              onClick={() => onMonthNavigate('next')}
-              className="p-1 hover:bg-white/20 rounded"
-            >
+            <button onClick={() => onMonthNavigate('next')} className="p-1 hover:bg-white/20 rounded">
               <ChevronRight className="h-5 w-5" />
             </button>
           </div>
@@ -49,26 +39,6 @@ export const DutyReportHeader: React.FC<DutyReportHeaderProps> = ({
           실제 당직 배정 데이터를 기반으로 생성된 당직 보고서
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6">
-        <div className="mb-4">
-          <Select value={selectedDate} onValueChange={onDateChange}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {monthDates.map(date => (
-                <SelectItem key={date} value={date}>
-                  {new Date(date).toLocaleDateString('ko-KR', { 
-                    month: 'long', 
-                    day: 'numeric',
-                    weekday: 'short'
-                  })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </CardContent>
-    </Card>
-  );
+      
+    </Card>;
 };
