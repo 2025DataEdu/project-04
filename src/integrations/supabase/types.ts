@@ -42,19 +42,19 @@ export type Database = {
             foreignKeyName: "duty_assignments_backup_worker_id_fkey"
             columns: ["backup_worker_id"]
             isOneToOne: false
-            referencedRelation: "근로자 리스트"
+            referencedRelation: "worker_list"
             referencedColumns: ["일련번호"]
           },
           {
             foreignKeyName: "duty_assignments_primary_worker_id_fkey"
             columns: ["primary_worker_id"]
             isOneToOne: false
-            referencedRelation: "근로자 리스트"
+            referencedRelation: "worker_list"
             referencedColumns: ["일련번호"]
           },
         ]
       }
-      "근로자 리스트": {
+      worker_list: {
         Row: {
           메일주소: string | null
           소속부서: string | null

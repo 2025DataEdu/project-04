@@ -20,8 +20,19 @@ const DutyAssignment = () => {
   const { isLoading, assignDuty, assignWeeklyDuties, getDutyAssignments } = useDutyAssignment();
 
   const loadAssignments = async () => {
-    const data = await getDutyAssignments();
-    setAssignments(data);
+    try {
+      const data = await getDutyAssignments();
+      // 타입 안전성을 위한 체크
+      if (Array.isArray(data)) {
+        setAssignments(data);
+      } else {
+        console.error('Unexpected data format:', data);
+        setAssignments([]);
+      }
+    } catch (error) {
+      console.error('Error loading assignments:', error);
+      setAssignments([]);
+    }
   };
 
   useEffect(() => {
@@ -205,12 +216,12 @@ const DutyAssignment = () => {
                       <div className="space-y-1">
                         <div className="text-sm font-medium text-blue-600">주당직자</div>
                         <div className="text-sm">
-                          <div className="font-medium">{assignment.primary_worker.이름}</div>
+                          <div className="font-medium">{assignment.primary_worker?.이름 || '정보 없음'}</div>
                           <div className="text-muted-foreground">
-                            {assignment.primary_worker.소속부서} · {assignment.primary_worker.직급}
+                            {assignment.primary_worker?.소속부서} · {assignment.primary_worker?.직급}
                           </div>
                           <div className="text-muted-foreground">
-                            {assignment.primary_worker.전화번호}
+                            {assignment.primary_worker?.전화번호}
                           </div>
                         </div>
                       </div>
@@ -218,12 +229,12 @@ const DutyAssignment = () => {
                       <div className="space-y-1">
                         <div className="text-sm font-medium text-green-600">예비당직자</div>
                         <div className="text-sm">
-                          <div className="font-medium">{assignment.backup_worker.이름}</div>
+                          <div className="font-medium">{assignment.backup_worker?.이름 || '정보 없음'}</div>
                           <div className="text-muted-foreground">
-                            {assignment.backup_worker.소속부서} · {assignment.backup_worker.직급}
+                            {assignment.backup_worker?.소속부서} · {assignment.backup_worker?.직급}
                           </div>
                           <div className="text-muted-foreground">
-                            {assignment.backup_worker.전화번호}
+                            {assignment.backup_worker?.전화번호}
                           </div>
                         </div>
                       </div>
