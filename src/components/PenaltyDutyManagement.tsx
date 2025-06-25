@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Calendar, Mail, Plus, UserX } from "lucide-react";
+import { AlertTriangle, Plus, UserX } from "lucide-react";
 import { usePenaltyDuty } from '@/hooks/usePenaltyDuty';
 import { useDutyAssignment } from '@/hooks/useDutyAssignment';
 import { PenaltyDutyWithWorker } from '@/types/penalty';
@@ -21,7 +21,7 @@ const PenaltyDutyManagement = () => {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
-  const { isLoading, createPenaltyDuty, getPenaltyDuties, updatePenaltyStatus } = usePenaltyDuty();
+  const { isLoading, createPenaltyDuty, getPenaltyDuties, updatePenaltyStatus, getDutyWorkerByDate } = usePenaltyDuty();
   const { getAvailableWorkers } = useDutyAssignment();
 
   const form = useForm({
@@ -29,8 +29,7 @@ const PenaltyDutyManagement = () => {
       worker_id: '',
       violation_date: '',
       violation_type: '',
-      violation_details: '',
-      reported_by: ''
+      violation_details: ''
     }
   });
 
@@ -52,8 +51,7 @@ const PenaltyDutyManagement = () => {
       worker_id: parseInt(data.worker_id),
       violation_date: data.violation_date,
       violation_type: data.violation_type,
-      violation_details: data.violation_details,
-      reported_by: data.reported_by
+      violation_details: data.violation_details
     });
 
     if (result) {
@@ -108,6 +106,7 @@ const PenaltyDutyManagement = () => {
                   <DialogTitle>벌당직 등록</DialogTitle>
                   <DialogDescription>
                     순찰 시 발견된 지적사항을 등록하고 해당 근무자에게 벌당직을 부여합니다.
+                    지적자는 해당 위반일자의 당직자로 자동 설정됩니다.
                   </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -193,20 +192,6 @@ const PenaltyDutyManagement = () => {
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="reported_by"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>지적자</FormLabel>
-                          <FormControl>
-                            <Input placeholder="지적한 당직자 이름" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
                     <DialogFooter>
                       <Button type="submit" disabled={isLoading}>
                         {isLoading ? '등록 중...' : '벌당직 등록'}
@@ -233,12 +218,10 @@ const PenaltyDutyManagement = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>대상자</TableHead>
-                    <TableHead>부서/직급</TableHead>
                     <TableHead>위반일자</TableHead>
                     <TableHead>위반유형</TableHead>
                     <TableHead>상세내용</TableHead>
                     <TableHead>지적자</TableHead>
-                    <TableHead>상태</TableHead>
                     <TableHead>벌당직일자</TableHead>
                     <TableHead>작업</TableHead>
                   </TableRow>
@@ -247,20 +230,7 @@ const PenaltyDutyManagement = () => {
                   {penalties.map((penalty) => (
                     <TableRow key={penalty.id}>
                       <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <div>{penalty.worker.이름}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {penalty.worker.메일주소}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{penalty.worker.소속부서}</div>
-                          <div className="text-sm text-muted-foreground">{penalty.worker.직급}</div>
-                        </div>
+                        {penalty.worker.이름}
                       </TableCell>
                       <TableCell>{penalty.violation_date}</TableCell>
                       <TableCell>
@@ -275,18 +245,14 @@ const PenaltyDutyManagement = () => {
                       </TableCell>
                       <TableCell>{penalty.reported_by}</TableCell>
                       <TableCell>
-                        <Badge className={`text-xs ${getStatusColor(penalty.penalty_status)}`}>
-                          {penalty.penalty_status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
                         {penalty.penalty_assigned_date ? (
-                          <div className="flex items-center gap-1 text-sm">
-                            <Calendar className="h-3 w-3" />
+                          <Badge className="bg-blue-100 text-blue-700">
                             {penalty.penalty_assigned_date}
-                          </div>
+                          </Badge>
                         ) : (
-                          <span className="text-muted-foreground text-sm">미배정</span>
+                          <Badge className={`text-xs ${getStatusColor(penalty.penalty_status)}`}>
+                            {penalty.penalty_status}
+                          </Badge>
                         )}
                       </TableCell>
                       <TableCell>

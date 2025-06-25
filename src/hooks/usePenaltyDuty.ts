@@ -7,18 +7,51 @@ import { toast } from 'sonner';
 export const usePenaltyDuty = () => {
   const [isLoading, setIsLoading] = useState(false);
 
+  const getDutyWorkerByDate = async (date: string) => {
+    try {
+      const { data: dutyReport } = await supabase
+        .from('duty_reports')
+        .select(`
+          duty_worker_id,
+          worker_list!inner(이름)
+        `)
+        .eq('report_date', date)
+        .single();
+
+      return dutyReport;
+    } catch (error) {
+      console.error('Error fetching duty worker:', error);
+      return null;
+    }
+  };
+
   const createPenaltyDuty = async (penaltyData: {
     worker_id: number;
     violation_date: string;
     violation_type: string;
     violation_details: string;
-    reported_by: string;
+    reported_by?: string;
   }) => {
     setIsLoading(true);
     try {
+      // 해당 위반일자의 당직자를 찾아서 지적자로 설정
+      let reportedBy = penaltyData.reported_by || '';
+      
+      if (!reportedBy) {
+        const dutyWorker = await getDutyWorkerByDate(penaltyData.violation_date);
+        if (dutyWorker && dutyWorker.worker_list) {
+          reportedBy = dutyWorker.worker_list.이름;
+        }
+      }
+
+      const finalPenaltyData = {
+        ...penaltyData,
+        reported_by: reportedBy || '알 수 없음'
+      };
+
       const { data, error } = await supabase
         .from('penalty_duties')
-        .insert(penaltyData)
+        .insert(finalPenaltyData)
         .select()
         .single();
 
@@ -33,7 +66,7 @@ export const usePenaltyDuty = () => {
         violation_type: penaltyData.violation_type,
         violation_details: penaltyData.violation_details,
         violation_date: penaltyData.violation_date,
-        reported_by: penaltyData.reported_by
+        reported_by: finalPenaltyData.reported_by
       });
 
       toast.success('벌당직이 등록되었고 이메일 통보가 발송되었습니다.');
@@ -175,6 +208,7 @@ export const usePenaltyDuty = () => {
     isLoading,
     createPenaltyDuty,
     getPenaltyDuties,
-    updatePenaltyStatus
+    updatePenaltyStatus,
+    getDutyWorkerByDate
   };
 };
