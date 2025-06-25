@@ -12,7 +12,6 @@ export const useDutyReports = () => {
     setIsLoading(true);
     try {
       const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
-      // 올바른 월말 날짜 계산
       const endDate = new Date(year, month, 0).toISOString().split('T')[0];
 
       console.log('Fetching duty reports for date range:', startDate, 'to', endDate);
@@ -23,13 +22,15 @@ export const useDutyReports = () => {
         .select('*')
         .gte('report_date', startDate)
         .lte('report_date', endDate)
-        .order('report_date', { ascending: false });
+        .order('report_date', { ascending: true }); // 날짜 순으로 정렬
 
       if (reportsError) {
         console.error('Error fetching duty reports:', reportsError);
         toast.error('당직 보고서를 불러오는데 실패했습니다.');
         return [];
       }
+
+      console.log(`Found ${reportsData?.length || 0} duty reports for ${year}-${month}`);
 
       if (!reportsData || reportsData.length === 0) {
         return [];
@@ -81,6 +82,12 @@ export const useDutyReports = () => {
           assignment: assignmentInfo
         };
       });
+
+      console.log('Reports with worker info:', reportsWithWorker.map(r => ({ 
+        date: r.report_date, 
+        worker: r.worker_name, 
+        type: r.assignment?.duty_type 
+      })));
 
       setReports(reportsWithWorker);
       return reportsWithWorker;
