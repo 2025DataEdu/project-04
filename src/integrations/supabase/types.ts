@@ -9,6 +9,93 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      complaint_solutions: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          keywords: string[]
+          priority_score: number
+          solution_content: string
+          solution_title: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          keywords: string[]
+          priority_score?: number
+          solution_content: string
+          solution_title: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          keywords?: string[]
+          priority_score?: number
+          solution_content?: string
+          solution_title?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
+      complaints: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          complainant_contact: string
+          complainant_name: string
+          complaint_number: string
+          content: string
+          created_at: string
+          id: string
+          priority: string
+          resolution_content: string | null
+          resolved_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          complainant_contact: string
+          complainant_name: string
+          complaint_number: string
+          content: string
+          created_at?: string
+          id?: string
+          priority?: string
+          resolution_content?: string | null
+          resolved_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          complainant_contact?: string
+          complainant_name?: string
+          complaint_number?: string
+          content?: string
+          created_at?: string
+          id?: string
+          priority?: string
+          resolution_content?: string | null
+          resolved_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       duty_assignments: {
         Row: {
           assignment_date: string
