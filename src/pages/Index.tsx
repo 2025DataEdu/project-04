@@ -96,6 +96,10 @@ const Index = () => {
               <Calendar className="h-4 w-4" />
               당직 배정
             </TabsTrigger>
+            <TabsTrigger value="analysis" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              업무 분석
+            </TabsTrigger>
             <TabsTrigger value="handover" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               인수인계 현황
@@ -116,34 +120,10 @@ const Index = () => {
               <ClipboardList className="h-4 w-4" />
               당직 보고서
             </TabsTrigger>
-            <TabsTrigger value="analysis" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              업무 분석
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="assignment">
             <DutyAssignment />
-          </TabsContent>
-
-          <TabsContent value="handover">
-            <HandoverDashboard />
-          </TabsContent>
-
-          <TabsContent value="penalty">
-            <PenaltyDutyManagement />
-          </TabsContent>
-
-          <TabsContent value="complaint-dashboard">
-            <ComplaintDashboard />
-          </TabsContent>
-
-          <TabsContent value="complaint-management">
-            <ComplaintManagement />
-          </TabsContent>
-
-          <TabsContent value="report">
-            <DutyReport />
           </TabsContent>
 
           <TabsContent value="analysis">
@@ -292,6 +272,26 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="handover">
+            <HandoverDashboard />
+          </TabsContent>
+
+          <TabsContent value="penalty">
+            <PenaltyDutyManagement />
+          </TabsContent>
+
+          <TabsContent value="complaint-dashboard">
+            <ComplaintDashboard />
+          </TabsContent>
+
+          <TabsContent value="complaint-management">
+            <ComplaintManagement />
+          </TabsContent>
+
+          <TabsContent value="report">
+            <DutyReport />
           </TabsContent>
         </Tabs>
 
