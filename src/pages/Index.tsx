@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Clock, FileText, Users, TrendingUp, AlertTriangle, CalendarDays } from "lucide-react";
+import { Shield, Clock, FileText, Users, TrendingUp, AlertTriangle, CalendarDays, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import DutyAssignment from "@/components/DutyAssignment";
+import HandoverDashboard from "@/components/HandoverDashboard";
 
 const Index = () => {
   const [inputContent, setInputContent] = useState('당직사령관한테 받은 지시 상황(각 시도에 있는 재난 정보 확인하여 산불대비, 근무 규정 확인)-> 업무 순찰(17시 부터 18시) -> 다음 당직자 인수인계');
@@ -75,7 +76,7 @@ const Index = () => {
         </div>
 
         <Tabs defaultValue="analysis" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="analysis" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               업무 분석
@@ -83,6 +84,10 @@ const Index = () => {
             <TabsTrigger value="duty" className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4" />
               당직 배정
+            </TabsTrigger>
+            <TabsTrigger value="handover" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              인수인계 현황
             </TabsTrigger>
           </TabsList>
 
@@ -223,6 +228,10 @@ const Index = () => {
 
           <TabsContent value="duty">
             <DutyAssignment />
+          </TabsContent>
+
+          <TabsContent value="handover">
+            <HandoverDashboard />
           </TabsContent>
         </Tabs>
 
