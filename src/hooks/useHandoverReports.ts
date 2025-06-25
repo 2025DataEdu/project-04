@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDutyReports } from '@/hooks/useDutyReports';
 import { DutyReportWithWorker } from '@/types/dutyReport';
 import { HandoverReport } from '@/types/handover';
@@ -10,7 +10,7 @@ export const useHandoverReports = (selectedWeek: Date) => {
   const [error, setError] = useState<string | null>(null);
   const { fetchDutyReports } = useDutyReports();
 
-  const convertDutyReportsToHandover = (dutyReports: DutyReportWithWorker[]): HandoverReport[] => {
+  const convertDutyReportsToHandover = useCallback((dutyReports: DutyReportWithWorker[]): HandoverReport[] => {
     try {
       return dutyReports.map(report => {
         const reportDate = new Date(report.report_date);
@@ -38,9 +38,9 @@ export const useHandoverReports = (selectedWeek: Date) => {
       console.error('Error converting duty reports to handover:', error);
       return [];
     }
-  };
+  }, []);
 
-  const getWeekDays = (date: Date) => {
+  const getWeekDays = useCallback((date: Date) => {
     const week = [];
     const startDate = new Date(date);
     const day = startDate.getDay();
@@ -53,15 +53,17 @@ export const useHandoverReports = (selectedWeek: Date) => {
       week.push(currentDate);
     }
     return week;
-  };
+  }, []);
 
-  const getReportForDate = (date: Date) => {
+  const getReportForDate = useCallback((date: Date) => {
     const dateString = date.toISOString().split('T')[0];
     return handoverReports.find(report => report.date === dateString);
-  };
+  }, [handoverReports]);
 
   useEffect(() => {
     const loadWeekData = async () => {
+      if (isLoading) return; // 이미 로딩 중이면 중복 실행 방지
+      
       setIsLoading(true);
       setError(null);
       
@@ -104,7 +106,7 @@ export const useHandoverReports = (selectedWeek: Date) => {
     };
 
     loadWeekData();
-  }, [selectedWeek, fetchDutyReports]);
+  }, [selectedWeek.getTime(), convertDutyReportsToHandover, getWeekDays]); // fetchDutyReports 제거하고 selectedWeek.getTime() 사용
 
   return {
     handoverReports,
