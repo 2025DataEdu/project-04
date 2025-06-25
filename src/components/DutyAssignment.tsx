@@ -1,24 +1,20 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, Users, Clock, UserPlus, RefreshCw, CalendarDays } from "lucide-react";
+import { Users, Clock, RefreshCw, CalendarDays } from "lucide-react";
 import { useDutyAssignment } from '@/hooks/useDutyAssignment';
 import { DutyAssignmentWithWorkers } from '@/types/duty';
 
 const DutyAssignment = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedDutyType, setSelectedDutyType] = useState<'평일야간' | '주말주간' | '주말야간'>('평일야간');
   const [assignments, setAssignments] = useState<DutyAssignmentWithWorkers[]>([]);
-  const [weekStartDate, setWeekStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
 
-  const { isLoading, assignDuty, assignWeeklyDuties, assignMonthlyDuties, getDutyAssignments } = useDutyAssignment();
+  const { isLoading, assignMonthlyDuties, getDutyAssignments } = useDutyAssignment();
 
   const loadAssignments = async () => {
     try {
@@ -40,20 +36,6 @@ const DutyAssignment = () => {
     loadAssignments();
   }, []);
 
-  const handleSingleAssignment = async () => {
-    const result = await assignDuty(selectedDate, selectedDutyType);
-    if (result) {
-      loadAssignments();
-    }
-  };
-
-  const handleWeeklyAssignment = async () => {
-    const results = await assignWeeklyDuties(weekStartDate);
-    if (results.length > 0) {
-      loadAssignments();
-    }
-  };
-
   const handleMonthlyAssignment = async () => {
     const results = await assignMonthlyDuties(selectedYear, selectedMonth);
     if (results.length > 0) {
@@ -72,101 +54,6 @@ const DutyAssignment = () => {
 
   return (
     <div className="space-y-6">
-      {/* 개별 당직 배정 */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-        <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
-            개별 당직 배정
-          </CardTitle>
-          <CardDescription className="text-blue-100">
-            특정 날짜와 당직 유형에 대해 당직자를 배정합니다
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">배정 날짜</label>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">당직 유형</label>
-              <Select value={selectedDutyType} onValueChange={(value: any) => setSelectedDutyType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="평일야간">평일야간</SelectItem>
-                  <SelectItem value="주말주간">주말주간</SelectItem>
-                  <SelectItem value="주말야간">주말야간</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end">
-              <Button 
-                onClick={handleSingleAssignment}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                    배정 중...
-                  </>
-                ) : (
-                  '당직 배정'
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 주간 당직 배정 */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-        <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            주간 당직 배정
-          </CardTitle>
-          <CardDescription className="text-green-100">
-            일주일간의 모든 당직을 자동으로 배정합니다 (평일야간 + 주말주야간)
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">주간 시작일 (월요일)</label>
-              <Input
-                type="date"
-                value={weekStartDate}
-                onChange={(e) => setWeekStartDate(e.target.value)}
-              />
-            </div>
-            <div className="flex items-end">
-              <Button 
-                onClick={handleWeeklyAssignment}
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                    배정 중...
-                  </>
-                ) : (
-                  '주간 당직 배정'
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* 월단위 당직 배정 */}
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
