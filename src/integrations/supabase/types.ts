@@ -222,6 +222,39 @@ export type Database = {
           },
         ]
       }
+      fire_safety_faqs: {
+        Row: {
+          answer: string
+          category: string
+          created_at: string
+          id: string
+          keywords: string[]
+          question: string
+          regulation_reference: string | null
+          updated_at: string
+        }
+        Insert: {
+          answer: string
+          category: string
+          created_at?: string
+          id?: string
+          keywords?: string[]
+          question: string
+          regulation_reference?: string | null
+          updated_at?: string
+        }
+        Update: {
+          answer?: string
+          category?: string
+          created_at?: string
+          id?: string
+          keywords?: string[]
+          question?: string
+          regulation_reference?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       penalty_duties: {
         Row: {
           created_at: string
@@ -268,6 +301,33 @@ export type Database = {
             referencedColumns: ["일련번호"]
           },
         ]
+      }
+      user_inquiries: {
+        Row: {
+          ai_response: string
+          created_at: string
+          id: string
+          matched_faqs: string[] | null
+          satisfaction_rating: number | null
+          user_question: string
+        }
+        Insert: {
+          ai_response: string
+          created_at?: string
+          id?: string
+          matched_faqs?: string[] | null
+          satisfaction_rating?: number | null
+          user_question: string
+        }
+        Update: {
+          ai_response?: string
+          created_at?: string
+          id?: string
+          matched_faqs?: string[] | null
+          satisfaction_rating?: number | null
+          user_question?: string
+        }
+        Relationships: []
       }
       worker_list: {
         Row: {

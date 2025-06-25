@@ -35,7 +35,11 @@ export const penaltyDutyService = {
       throw new Error('벌당직 목록을 불러오는데 실패했습니다.');
     }
 
-    return penalties || [];
+    // Cast penalty_status to the correct union type
+    return (penalties || []).map(penalty => ({
+      ...penalty,
+      penalty_status: penalty.penalty_status as '대기' | '완료' | '취소'
+    }));
   },
 
   async updatePenaltyStatus(id: string, status: '대기' | '완료' | '취소', penalty_assigned_date?: string) {
