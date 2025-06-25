@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDutyReports } from '@/hooks/useDutyReports';
 import { DutyReportWithWorker } from '@/types/dutyReport';
 import { HandoverReport } from '@/types/handover';
@@ -9,6 +9,7 @@ export const useHandoverReports = (selectedWeek: Date) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { fetchDutyReports } = useDutyReports();
+  const loadingRef = useRef(false);
 
   const convertDutyReportsToHandover = useCallback((dutyReports: DutyReportWithWorker[]): HandoverReport[] => {
     try {
@@ -60,57 +61,59 @@ export const useHandoverReports = (selectedWeek: Date) => {
     return handoverReports.find(report => report.date === dateString);
   }, [handoverReports]);
 
-  useEffect(() => {
-    const loadWeekData = async () => {
-      if (isLoading) return;
+  const loadWeekData = useCallback(async () => {
+    if (loadingRef.current) return;
+    
+    loadingRef.current = true;
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const weekDays = getWeekDays(selectedWeek);
+      const startDate = weekDays[0].toISOString().split('T')[0];
+      const endDate = weekDays[6].toISOString().split('T')[0];
       
-      setIsLoading(true);
-      setError(null);
+      // 날짜 범위로 직접 필터링하여 해당 주의 모든 데이터를 가져옴
+      const year = parseInt(startDate.split('-')[0]);
+      const month = parseInt(startDate.split('-')[1]);
       
-      try {
-        const weekDays = getWeekDays(selectedWeek);
-        const startDate = weekDays[0].toISOString().split('T')[0];
-        const endDate = weekDays[6].toISOString().split('T')[0];
-        
-        // 날짜 범위로 직접 필터링하여 해당 주의 모든 데이터를 가져옴
-        const year = parseInt(startDate.split('-')[0]);
-        const month = parseInt(startDate.split('-')[1]);
-        
-        console.log(`Loading handover data for week ${startDate} to ${endDate}`);
-        
-        // 해당 월의 모든 데이터를 가져옴
-        const monthReports = await fetchDutyReports(year, month);
-        
-        if (!monthReports) {
-          console.log('No reports returned from fetchDutyReports');
-          setHandoverReports([]);
-          return;
-        }
-
-        // 해당 주에 해당하는 데이터만 필터링
-        const weekReports = monthReports.filter(report => {
-          if (!report.report_date) return false;
-          const reportDate = report.report_date;
-          return reportDate >= startDate && reportDate <= endDate;
-        });
-        
-        console.log(`Found ${weekReports.length} reports for week ${startDate} to ${endDate}`);
-        console.log('Week reports:', weekReports.map(r => ({ date: r.report_date, worker: r.worker_name, type: r.assignment?.duty_type })));
-        
-        const convertedReports = convertDutyReportsToHandover(weekReports);
-        setHandoverReports(convertedReports);
-        
-      } catch (error) {
-        console.error('Error loading handover data:', error);
-        setError('당직보고서를 불러오는데 실패했습니다.');
+      console.log(`Loading handover data for week ${startDate} to ${endDate}`);
+      
+      // 해당 월의 모든 데이터를 가져옴
+      const monthReports = await fetchDutyReports(year, month);
+      
+      if (!monthReports) {
+        console.log('No reports returned from fetchDutyReports');
         setHandoverReports([]);
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
 
+      // 해당 주에 해당하는 데이터만 필터링
+      const weekReports = monthReports.filter(report => {
+        if (!report.report_date) return false;
+        const reportDate = report.report_date;
+        return reportDate >= startDate && reportDate <= endDate;
+      });
+      
+      console.log(`Found ${weekReports.length} reports for week ${startDate} to ${endDate}`);
+      console.log('Week reports:', weekReports.map(r => ({ date: r.report_date, worker: r.worker_name, type: r.assignment?.duty_type })));
+      
+      const convertedReports = convertDutyReportsToHandover(weekReports);
+      setHandoverReports(convertedReports);
+      
+    } catch (error) {
+      console.error('Error loading handover data:', error);
+      setError('당직보고서를 불러오는데 실패했습니다.');
+      setHandoverReports([]);
+    } finally {
+      setIsLoading(false);
+      loadingRef.current = false;
+    }
+  }, [selectedWeek, fetchDutyReports, convertDutyReportsToHandover, getWeekDays]);
+
+  useEffect(() => {
     loadWeekData();
-  }, [selectedWeek.getTime(), fetchDutyReports, convertDutyReportsToHandover, getWeekDays]);
+  }, [loadWeekData]);
 
   return {
     handoverReports,
