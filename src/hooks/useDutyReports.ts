@@ -12,7 +12,10 @@ export const useDutyReports = () => {
     setIsLoading(true);
     try {
       const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
-      const endDate = `${year}-${month.toString().padStart(2, '0')}-31`;
+      // 올바른 월말 날짜 계산
+      const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+
+      console.log('Fetching duty reports for date range:', startDate, 'to', endDate);
 
       // 당직 보고서 데이터를 조회
       const { data: reportsData, error: reportsError } = await supabase
