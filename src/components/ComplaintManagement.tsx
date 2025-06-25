@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,8 @@ const ComplaintManagement = () => {
     const complaintNumber = `C${Date.now()}`;
     const result = await createComplaint({
       ...newComplaint,
-      complaint_number: complaintNumber
+      complaint_number: complaintNumber,
+      status: '접수'
     });
 
     if (result) {
