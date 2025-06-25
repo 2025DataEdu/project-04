@@ -22,7 +22,7 @@ export const dutyWorkerService = {
 
       return {
         duty_worker_id: dutyReport.duty_worker_id,
-        worker_name: worker?.이름 || null
+        worker_name: worker ? (worker as any).이름 : null
       };
     } catch (error) {
       console.error('Error fetching duty worker:', error);
