@@ -141,6 +141,87 @@ export type Database = {
           },
         ]
       }
+      duty_reports: {
+        Row: {
+          assignment_id: string | null
+          created_at: string
+          duty_worker_id: number | null
+          handover_completion_rate: number | null
+          handover_issues: string | null
+          handover_notes: string | null
+          handover_pending: string | null
+          id: string
+          instruction_abnormalities: string | null
+          instruction_content: string | null
+          instruction_datetime: string | null
+          instruction_handover: string | null
+          patrol_actions: string | null
+          patrol_content: string | null
+          patrol_datetime: string | null
+          patrol_notes: string | null
+          report_date: string
+          report_types: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          created_at?: string
+          duty_worker_id?: number | null
+          handover_completion_rate?: number | null
+          handover_issues?: string | null
+          handover_notes?: string | null
+          handover_pending?: string | null
+          id?: string
+          instruction_abnormalities?: string | null
+          instruction_content?: string | null
+          instruction_datetime?: string | null
+          instruction_handover?: string | null
+          patrol_actions?: string | null
+          patrol_content?: string | null
+          patrol_datetime?: string | null
+          patrol_notes?: string | null
+          report_date: string
+          report_types?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string | null
+          created_at?: string
+          duty_worker_id?: number | null
+          handover_completion_rate?: number | null
+          handover_issues?: string | null
+          handover_notes?: string | null
+          handover_pending?: string | null
+          id?: string
+          instruction_abnormalities?: string | null
+          instruction_content?: string | null
+          instruction_datetime?: string | null
+          instruction_handover?: string | null
+          patrol_actions?: string | null
+          patrol_content?: string | null
+          patrol_datetime?: string | null
+          patrol_notes?: string | null
+          report_date?: string
+          report_types?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "duty_reports_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "duty_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "duty_reports_duty_worker_id_fkey"
+            columns: ["duty_worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_list"
+            referencedColumns: ["일련번호"]
+          },
+        ]
+      }
       penalty_duties: {
         Row: {
           created_at: string

@@ -1,63 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Calendar, FileText, AlertTriangle, Shield, Clock, ChevronLeft, ChevronRight } from "lucide-react";
-
-interface DutyReportData {
-  date: string;
-  types: string[];
-  meeting: {
-    datetime: string;
-    reports: string;
-    abnormalities: string;
-    handover: string;
-  };
-  inspection: {
-    datetime: string;
-    content: string;
-    actions: string;
-    notes: string;
-  };
-  handover: {
-    issues: string;
-    pending: string;
-    notes: string;
-    completionRate: string;
-  };
-}
+import { Calendar, FileText, AlertTriangle, Shield, Clock, ChevronLeft, ChevronRight, User } from "lucide-react";
+import { useDutyReports } from '@/hooks/useDutyReports';
+import { DutyReportWithWorker } from '@/types/dutyReport';
 
 const DutyReport = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [currentReport, setCurrentReport] = useState<DutyReportWithWorker | null>(null);
 
-  // Mock data - 실제로는 분석 결과를 저장/불러오는 로직이 필요
-  const [reportData] = useState<DutyReportData>({
-    date: "2024-06-25",
-    types: ['지시사항', '순찰', '인수인계'],
-    meeting: {
-      datetime: "2024-06-25, 당직사령관 지시",
-      reports: "각 시도 재난 정보 확인, 산불대비 상황 점검",
-      abnormalities: "특이사항 없음",
-      handover: "다음 당직자에게 당일 지시사항 및 순찰 결과 전달"
-    },
-    inspection: {
-      datetime: "2024-06-25 17:00-18:00",
-      content: "정기 업무 순찰 실시",
-      actions: "시설 전반 점검 완료, 보안 상태 확인",
-      notes: "산불대비 관련 지시사항에 따른 추가 점검 실시"
-    },
-    handover: {
-      issues: "없음",
-      pending: "2건의 대기 중인 업무",
-      notes: "산불대비 상황 지속 모니터링 필요, 재난 정보 확인 결과 공유",
-      completionRate: "85%"
-    }
-  });
+  const { isLoading, reports, fetchDutyReports, getDutyReportByDate } = useDutyReports();
+
+  useEffect(() => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    fetchDutyReports(year, month);
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    const loadReportForDate = async () => {
+      const report = await getDutyReportByDate(selectedDate);
+      setCurrentReport(report);
+    };
+    loadReportForDate();
+  }, [selectedDate]);
 
   const navigateMonth = (direction: 'prev' | 'next') => {
     const currentDate = new Date(selectedMonth + '-01');
@@ -77,6 +48,7 @@ const DutyReport = () => {
   };
 
   const monthDates = generateDatesForMonth(selectedMonth);
+  const reportsMap = new Map(reports.map(report => [report.report_date, report]));
 
   return (
     <div className="space-y-6">
@@ -107,7 +79,7 @@ const DutyReport = () => {
             </div>
           </CardTitle>
           <CardDescription className="text-purple-100">
-            업무 분석 결과를 기반으로 생성된 당직 보고서
+            실제 당직 배정 데이터를 기반으로 생성된 당직 보고서
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
@@ -130,7 +102,11 @@ const DutyReport = () => {
             </Select>
           </div>
 
-          {reportData && (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-500 border-t-transparent" />
+            </div>
+          ) : currentReport ? (
             <div className="grid lg:grid-cols-2 gap-6">
               {/* 보고서 요약 */}
               <Card>
@@ -143,9 +119,27 @@ const DutyReport = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div>
+                      <h4 className="font-semibold text-sm mb-2">당직자 정보</h4>
+                      <div className="flex items-center gap-2 mb-2">
+                        <User className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium">{currentReport.worker_name}</span>
+                        <Badge variant="outline" className="bg-blue-50 border-blue-200">
+                          {currentReport.worker_department}
+                        </Badge>
+                      </div>
+                      {currentReport.assignment && (
+                        <div className="text-sm text-muted-foreground">
+                          <span>당직 유형: </span>
+                          <Badge variant="secondary">{currentReport.assignment.duty_type}</Badge>
+                          <span className="ml-2">예비: {currentReport.assignment.backup_worker_name}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
                       <h4 className="font-semibold text-sm mb-2">업무 분류</h4>
                       <div className="flex flex-wrap gap-2">
-                        {reportData.types.map((type, index) => (
+                        {currentReport.report_types?.map((type, index) => (
                           <Badge key={index} variant="outline" className="bg-blue-50 border-blue-200">
                             {type}
                           </Badge>
@@ -158,9 +152,9 @@ const DutyReport = () => {
                     <div>
                       <h4 className="font-semibold text-sm mb-2">인수인계 현황</h4>
                       <div className="space-y-2 text-sm">
-                        <div><strong>완료율:</strong> <Badge variant="outline">{reportData.handover.completionRate}</Badge></div>
-                        <div><strong>대기 업무:</strong> {reportData.handover.pending}</div>
-                        <div><strong>주요 이슈:</strong> {reportData.handover.issues}</div>
+                        <div><strong>완료율:</strong> <Badge variant="outline">{currentReport.handover_completion_rate}%</Badge></div>
+                        <div><strong>대기 업무:</strong> {currentReport.handover_pending}</div>
+                        <div><strong>주요 이슈:</strong> {currentReport.handover_issues}</div>
                       </div>
                     </div>
                   </div>
@@ -185,10 +179,10 @@ const DutyReport = () => {
                           지시사항/상황 요약
                         </h4>
                         <div className="bg-orange-50 p-3 rounded-lg space-y-1 text-sm">
-                          <div><strong>지시 일시:</strong> {reportData.meeting.datetime}</div>
-                          <div><strong>주요 지시사항:</strong> {reportData.meeting.reports}</div>
-                          <div><strong>이상 유무:</strong> {reportData.meeting.abnormalities}</div>
-                          <div><strong>후속 조치:</strong> {reportData.meeting.handover}</div>
+                          <div><strong>지시 일시:</strong> {currentReport.instruction_datetime}</div>
+                          <div><strong>주요 지시사항:</strong> {currentReport.instruction_content}</div>
+                          <div><strong>이상 유무:</strong> {currentReport.instruction_abnormalities}</div>
+                          <div><strong>후속 조치:</strong> {currentReport.instruction_handover}</div>
                         </div>
                       </div>
 
@@ -199,10 +193,10 @@ const DutyReport = () => {
                           순찰/점검 보고
                         </h4>
                         <div className="bg-green-50 p-3 rounded-lg space-y-1 text-sm">
-                          <div><strong>순찰 시간:</strong> {reportData.inspection.datetime}</div>
-                          <div><strong>순찰 내용:</strong> {reportData.inspection.content}</div>
-                          <div><strong>점검 결과:</strong> {reportData.inspection.actions}</div>
-                          <div><strong>특이사항:</strong> {reportData.inspection.notes}</div>
+                          <div><strong>순찰 시간:</strong> {currentReport.patrol_datetime}</div>
+                          <div><strong>순찰 내용:</strong> {currentReport.patrol_content}</div>
+                          <div><strong>점검 결과:</strong> {currentReport.patrol_actions}</div>
+                          <div><strong>특이사항:</strong> {currentReport.patrol_notes}</div>
                         </div>
                       </div>
 
@@ -213,15 +207,19 @@ const DutyReport = () => {
                           인수인계 사항
                         </h4>
                         <div className="bg-purple-50 p-3 rounded-lg space-y-1 text-sm">
-                          <div><strong>주요 이슈:</strong> {reportData.handover.issues}</div>
-                          <div><strong>미해결 과제:</strong> {reportData.handover.pending}</div>
-                          <div><strong>다음 근무자 유의사항:</strong> {reportData.handover.notes}</div>
+                          <div><strong>주요 이슈:</strong> {currentReport.handover_issues}</div>
+                          <div><strong>미해결 과제:</strong> {currentReport.handover_pending}</div>
+                          <div><strong>다음 근무자 유의사항:</strong> {currentReport.handover_notes}</div>
                         </div>
                       </div>
                     </div>
                   </ScrollArea>
                 </CardContent>
               </Card>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              선택한 날짜에 대한 당직 보고서가 없습니다.
             </div>
           )}
         </CardContent>
@@ -236,8 +234,9 @@ const DutyReport = () => {
         <CardContent>
           <div className="grid grid-cols-7 gap-2">
             {monthDates.map(date => {
-              const hasReport = date === reportData.date; // 실제로는 해당 날짜에 보고서가 있는지 확인
+              const hasReport = reportsMap.has(date);
               const isSelected = date === selectedDate;
+              const reportData = reportsMap.get(date);
               
               return (
                 <Button
@@ -248,7 +247,14 @@ const DutyReport = () => {
                   onClick={() => setSelectedDate(date)}
                 >
                   <span className="text-xs">{new Date(date).getDate()}</span>
-                  {hasReport && <span className="text-xs text-green-600">●</span>}
+                  {hasReport && (
+                    <div className="flex flex-col items-center">
+                      <span className="text-xs text-green-600">●</span>
+                      <span className="text-xs text-green-600 truncate w-full">
+                        {reportData?.worker_name}
+                      </span>
+                    </div>
+                  )}
                 </Button>
               );
             })}
