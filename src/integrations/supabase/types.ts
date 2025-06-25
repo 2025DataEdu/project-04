@@ -54,6 +54,53 @@ export type Database = {
           },
         ]
       }
+      penalty_duties: {
+        Row: {
+          created_at: string
+          id: string
+          penalty_assigned_date: string | null
+          penalty_status: string
+          reported_by: string
+          updated_at: string
+          violation_date: string
+          violation_details: string
+          violation_type: string
+          worker_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          penalty_assigned_date?: string | null
+          penalty_status?: string
+          reported_by: string
+          updated_at?: string
+          violation_date: string
+          violation_details: string
+          violation_type: string
+          worker_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          penalty_assigned_date?: string | null
+          penalty_status?: string
+          reported_by?: string
+          updated_at?: string
+          violation_date?: string
+          violation_details?: string
+          violation_type?: string
+          worker_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "penalty_duties_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "worker_list"
+            referencedColumns: ["일련번호"]
+          },
+        ]
+      }
       worker_list: {
         Row: {
           메일주소: string | null

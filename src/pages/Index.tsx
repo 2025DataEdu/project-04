@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Clock, FileText, Users, TrendingUp, AlertTriangle, CalendarDays, ClipboardList } from "lucide-react";
+import { Shield, Clock, FileText, Users, TrendingUp, AlertTriangle, CalendarDays, ClipboardList, Calendar, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 import DutyAssignment from "@/components/DutyAssignment";
 import HandoverDashboard from "@/components/HandoverDashboard";
+import PenaltyDutyManagement from '@/components/PenaltyDutyManagement';
 
 const Index = () => {
+  const [activeTab, setActiveTab] = useState('assignment');
   const [inputContent, setInputContent] = useState('당직사령관한테 받은 지시 상황(각 시도에 있는 재난 정보 확인하여 산불대비, 근무 규정 확인)-> 업무 순찰(17시 부터 18시) -> 다음 당직자 인수인계');
   const [analyzedData, setAnalyzedData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -60,36 +62,53 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Shield className="h-10 w-10 text-blue-600" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              공공기관 당직근무 AI 비서
-            </h1>
-          </div>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            당직근무 업무의 디지털 혁신을 통해 효율성과 신뢰성을 향상시키는 스마트 솔루션
-          </p>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">당직 관리 시스템</h1>
+          <p className="text-gray-600">효율적인 당직 배정과 관리를 위한 통합 시스템</p>
         </div>
 
-        <Tabs defaultValue="analysis" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="analysis" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              업무 분석
-            </TabsTrigger>
-            <TabsTrigger value="duty" className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-8">
+            <TabsTrigger value="assignment" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
               당직 배정
             </TabsTrigger>
             <TabsTrigger value="handover" className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
               인수인계 현황
             </TabsTrigger>
+            <TabsTrigger value="penalty" className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              벌당직 관리
+            </TabsTrigger>
+            <TabsTrigger value="report" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              당직 보고서
+            </TabsTrigger>
+            <TabsTrigger value="analysis" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              업무 분석
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="assignment">
+            <DutyAssignment />
+          </TabsContent>
+
+          <TabsContent value="handover">
+            <HandoverDashboard />
+          </TabsContent>
+
+          <TabsContent value="penalty">
+            <PenaltyDutyManagement />
+          </TabsContent>
+
+          <TabsContent value="report">
+            {/* Report Content */}
+          </TabsContent>
 
           <TabsContent value="analysis">
             <div className="grid lg:grid-cols-2 gap-8">
@@ -224,14 +243,6 @@ const Index = () => {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-
-          <TabsContent value="duty">
-            <DutyAssignment />
-          </TabsContent>
-
-          <TabsContent value="handover">
-            <HandoverDashboard />
           </TabsContent>
         </Tabs>
 

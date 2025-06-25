@@ -1,4 +1,3 @@
-
 export interface Worker {
   일련번호: number;
   소속부서: string;
@@ -22,4 +21,21 @@ export interface DutyAssignment {
 export interface DutyAssignmentWithWorkers extends DutyAssignment {
   primary_worker: Worker;
   backup_worker: Worker;
+}
+
+export interface PenaltyDuty {
+  id: string;
+  worker_id: number;
+  violation_date: string;
+  violation_type: string;
+  violation_details: string;
+  reported_by: string;
+  penalty_status: '대기' | '완료' | '취소';
+  penalty_assigned_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PenaltyDutyWithWorker extends PenaltyDuty {
+  worker: Worker;
 }
