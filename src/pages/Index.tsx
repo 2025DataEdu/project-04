@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { toast } from "sonner";
 import DutyAssignment from "@/components/DutyAssignment";
 
 const Index = () => {
-  const [inputContent, setInputContent] = useState('');
+  const [inputContent, setInputContent] = useState('당직사령관한테 받은 지시 상황(각 시도에 있는 재난 정보 확인하여 산불대비, 근무 규정 확인)-> 업무 순찰(17시 부터 18시) -> 다음 당직자 인수인계');
   const [analyzedData, setAnalyzedData] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -24,26 +23,26 @@ const Index = () => {
 
     setIsAnalyzing(true);
     
-    // Simulate AI analysis
+    // Analyze the specific content
     setTimeout(() => {
       const mockAnalysis = {
-        types: ['회의', '점검', '인수인계'],
+        types: ['지시사항', '순찰', '인수인계'],
         meeting: {
-          datetime: "2024-06-25 14:00, 상황실",
-          reports: "정상 운영 중, 특이사항 없음",
-          abnormalities: "없음",
-          handover: "다음 근무자에게 정기점검 완료 상태 전달"
+          datetime: "2024-06-25, 당직사령관 지시",
+          reports: "각 시도 재난 정보 확인, 산불대비 상황 점검",
+          abnormalities: "특이사항 없음",
+          handover: "다음 당직자에게 당일 지시사항 및 순찰 결과 전달"
         },
         inspection: {
-          datetime: "2024-06-25 13:30",
-          content: "시설 안전점검 실시",
-          actions: "전 구역 정상 확인, 보고서 작성 완료",
-          notes: "CCTV 시스템 정상 작동 확인"
+          datetime: "2024-06-25 17:00-18:00",
+          content: "정기 업무 순찰 실시",
+          actions: "시설 전반 점검 완료, 보안 상태 확인",
+          notes: "산불대비 관련 지시사항에 따른 추가 점검 실시"
         },
         handover: {
           issues: "없음",
-          pending: "내일 오전 정기회의 준비",
-          notes: "야간 순찰 시 출입구 보안 강화 필요"
+          pending: "당직사령관 지시사항 이행 완료 보고",
+          notes: "산불대비 상황 지속 모니터링 필요, 재난 정보 확인 결과 공유"
         }
       };
       
@@ -97,18 +96,16 @@ const Index = () => {
                     업무 내용 입력
                   </CardTitle>
                   <CardDescription className="text-blue-100">
-                    회의, 점검, 상황보고, 인수인계 등의 내용을 입력해주세요
+                    지시사항, 순찰, 인수인계 등의 내용을 입력해주세요
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <Textarea
                       placeholder="예시: 
-오늘 14시 상황실에서 정기회의 진행
-- 전체 시설 점검 완료, 이상 없음
-- CCTV 시스템 정상 작동 확인
-- 다음 근무자에게 야간 순찰 시 출입구 보안 강화 당부
-- 내일 오전 정기회의 준비사항 전달"
+당직사령관한테 받은 지시 상황(각 시도에 있는 재난 정보 확인하여 산불대비, 근무 규정 확인)
+-> 업무 순찰(17시 부터 18시)
+-> 다음 당직자 인수인계"
                       value={inputContent}
                       onChange={(e) => setInputContent(e.target.value)}
                       className="min-h-[200px] resize-none border-2 focus:border-blue-500 transition-colors"
@@ -176,31 +173,31 @@ const Index = () => {
 
                         <Separator />
 
-                        {/* Meeting Summary */}
+                        {/* Commander Instructions */}
                         <div className="space-y-3">
                           <h3 className="font-semibold text-lg flex items-center gap-2">
-                            <Users className="h-5 w-5 text-blue-600" />
-                            회의/음성 요약
+                            <AlertTriangle className="h-5 w-5 text-orange-600" />
+                            지시사항/상황 요약
                           </h3>
-                          <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-                            <div><strong>일시 및 장소:</strong> {analyzedData.meeting.datetime}</div>
-                            <div><strong>주요 보고 및 전달사항:</strong> {analyzedData.meeting.reports}</div>
+                          <div className="bg-orange-50 p-4 rounded-lg space-y-2">
+                            <div><strong>지시 일시 및 출처:</strong> {analyzedData.meeting.datetime}</div>
+                            <div><strong>주요 지시 및 확인사항:</strong> {analyzedData.meeting.reports}</div>
                             <div><strong>이상 유무 및 특이사항:</strong> {analyzedData.meeting.abnormalities}</div>
-                            <div><strong>담당자 인수인계 사항:</strong> {analyzedData.meeting.handover}</div>
+                            <div><strong>후속 조치 및 전달사항:</strong> {analyzedData.meeting.handover}</div>
                           </div>
                         </div>
 
-                        {/* Inspection Report */}
+                        {/* Patrol Report */}
                         <div className="space-y-3">
                           <h3 className="font-semibold text-lg flex items-center gap-2">
                             <Shield className="h-5 w-5 text-green-600" />
-                            점검/상황보고
+                            순찰/점검 보고
                           </h3>
                           <div className="bg-green-50 p-4 rounded-lg space-y-2">
-                            <div><strong>점검/상황 발생 일시:</strong> {analyzedData.inspection.datetime}</div>
-                            <div><strong>점검 또는 상황 내용:</strong> {analyzedData.inspection.content}</div>
-                            <div><strong>조치 및 전달사항:</strong> {analyzedData.inspection.actions}</div>
-                            <div><strong>특이사항 및 추가 메모:</strong> {analyzedData.inspection.notes}</div>
+                            <div><strong>순찰 실시 시간:</strong> {analyzedData.inspection.datetime}</div>
+                            <div><strong>순찰 내용:</strong> {analyzedData.inspection.content}</div>
+                            <div><strong>점검 결과 및 조치사항:</strong> {analyzedData.inspection.actions}</div>
+                            <div><strong>특이사항 및 추가 조치:</strong> {analyzedData.inspection.notes}</div>
                           </div>
                         </div>
 
