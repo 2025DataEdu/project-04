@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import HandoverDashboard from "@/components/HandoverDashboard";
 import PenaltyDutyManagement from '@/components/PenaltyDutyManagement';
 import ComplaintDashboard from '@/components/ComplaintDashboard';
 import ComplaintManagement from '@/components/ComplaintManagement';
+import DutyReport from '@/components/DutyReport';
 import { useHandoverData } from '@/hooks/useHandoverData';
 
 const Index = () => {
@@ -143,15 +143,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="report">
-            <Card>
-              <CardHeader>
-                <CardTitle>당직 보고서</CardTitle>
-                <CardDescription>당직 업무 보고서 작성 및 관리</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">당직 보고서 기능은 개발 중입니다.</p>
-              </CardContent>
-            </Card>
+            <DutyReport />
           </TabsContent>
 
           <TabsContent value="analysis">
