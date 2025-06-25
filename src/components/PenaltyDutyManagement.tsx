@@ -222,8 +222,7 @@ const PenaltyDutyManagement = () => {
                     <TableHead>위반유형</TableHead>
                     <TableHead>상세내용</TableHead>
                     <TableHead>지적자</TableHead>
-                    <TableHead>벌당직일자</TableHead>
-                    <TableHead>작업</TableHead>
+                    <TableHead>상태</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -245,42 +244,9 @@ const PenaltyDutyManagement = () => {
                       </TableCell>
                       <TableCell>{penalty.reported_by}</TableCell>
                       <TableCell>
-                        {penalty.penalty_assigned_date ? (
-                          <Badge className="bg-blue-100 text-blue-700">
-                            {penalty.penalty_assigned_date}
-                          </Badge>
-                        ) : (
-                          <Badge className={`text-xs ${getStatusColor(penalty.penalty_status)}`}>
-                            {penalty.penalty_status}
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          {penalty.penalty_status === '대기' && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  const date = prompt('벌당직 배정일을 입력하세요 (YYYY-MM-DD):');
-                                  if (date) {
-                                    handleStatusUpdate(penalty.id, '완료', date);
-                                  }
-                                }}
-                              >
-                                완료
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleStatusUpdate(penalty.id, '취소')}
-                              >
-                                취소
-                              </Button>
-                            </>
-                          )}
-                        </div>
+                        <Badge className={`text-xs ${getStatusColor(penalty.penalty_status)}`}>
+                          {penalty.penalty_status}
+                        </Badge>
                       </TableCell>
                     </TableRow>
                   ))}
