@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Shield, Clock, FileText, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Shield, Clock, FileText, Users, TrendingUp, AlertTriangle, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
+import DutyAssignment from "@/components/DutyAssignment";
 
 const Index = () => {
   const [inputContent, setInputContent] = useState('');
@@ -73,145 +75,164 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Input Section */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                업무 내용 입력
-              </CardTitle>
-              <CardDescription className="text-blue-100">
-                회의, 점검, 상황보고, 인수인계 등의 내용을 입력해주세요
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <Textarea
-                  placeholder="예시: 
+        <Tabs defaultValue="analysis" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="analysis" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              업무 분석
+            </TabsTrigger>
+            <TabsTrigger value="duty" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              당직 배정
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="analysis">
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Input Section */}
+              <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    업무 내용 입력
+                  </CardTitle>
+                  <CardDescription className="text-blue-100">
+                    회의, 점검, 상황보고, 인수인계 등의 내용을 입력해주세요
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <Textarea
+                      placeholder="예시: 
 오늘 14시 상황실에서 정기회의 진행
 - 전체 시설 점검 완료, 이상 없음
 - CCTV 시스템 정상 작동 확인
 - 다음 근무자에게 야간 순찰 시 출입구 보안 강화 당부
 - 내일 오전 정기회의 준비사항 전달"
-                  value={inputContent}
-                  onChange={(e) => setInputContent(e.target.value)}
-                  className="min-h-[200px] resize-none border-2 focus:border-blue-500 transition-colors"
-                />
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={analyzeContent}
-                    disabled={isAnalyzing}
-                    className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 transition-all duration-200"
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
-                        분석 중...
-                      </>
-                    ) : (
-                      '내용 분석하기'
-                    )}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={clearData}
-                    className="hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-colors"
-                  >
-                    초기화
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Analysis Results */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                분석 결과
-              </CardTitle>
-              <CardDescription className="text-green-100">
-                AI가 분석한 구조화된 업무 정보
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              {!analyzedData ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>업무 내용을 입력하고 분석 버튼을 클릭해주세요</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-6">
-                    {/* Types */}
-                    <div>
-                      <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">분류</Badge>
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {analyzedData.types.map((type, index) => (
-                          <Badge key={index} variant="outline" className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
-                            {type}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    {/* Meeting Summary */}
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-lg flex items-center gap-2">
-                        <Users className="h-5 w-5 text-blue-600" />
-                        회의/음성 요약
-                      </h3>
-                      <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-                        <div><strong>일시 및 장소:</strong> {analyzedData.meeting.datetime}</div>
-                        <div><strong>주요 보고 및 전달사항:</strong> {analyzedData.meeting.reports}</div>
-                        <div><strong>이상 유무 및 특이사항:</strong> {analyzedData.meeting.abnormalities}</div>
-                        <div><strong>담당자 인수인계 사항:</strong> {analyzedData.meeting.handover}</div>
-                      </div>
-                    </div>
-
-                    {/* Inspection Report */}
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-lg flex items-center gap-2">
-                        <Shield className="h-5 w-5 text-green-600" />
-                        점검/상황보고
-                      </h3>
-                      <div className="bg-green-50 p-4 rounded-lg space-y-2">
-                        <div><strong>점검/상황 발생 일시:</strong> {analyzedData.inspection.datetime}</div>
-                        <div><strong>점검 또는 상황 내용:</strong> {analyzedData.inspection.content}</div>
-                        <div><strong>조치 및 전달사항:</strong> {analyzedData.inspection.actions}</div>
-                        <div><strong>특이사항 및 추가 메모:</strong> {analyzedData.inspection.notes}</div>
-                      </div>
-                    </div>
-
-                    {/* Handover Summary */}
-                    <div className="space-y-3">
-                      <h3 className="font-semibold text-lg flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-purple-600" />
-                        인수인계 요약
-                      </h3>
-                      <div className="bg-purple-50 p-4 rounded-lg space-y-2">
-                        <div><strong>주요 이슈:</strong> {analyzedData.handover.issues}</div>
-                        <div><strong>미해결 과제:</strong> {analyzedData.handover.pending}</div>
-                        <div><strong>다음 근무자 유의사항:</strong> {analyzedData.handover.notes}</div>
-                      </div>
+                      value={inputContent}
+                      onChange={(e) => setInputContent(e.target.value)}
+                      className="min-h-[200px] resize-none border-2 focus:border-blue-500 transition-colors"
+                    />
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={analyzeContent}
+                        disabled={isAnalyzing}
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 transition-all duration-200"
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                            분석 중...
+                          </>
+                        ) : (
+                          '내용 분석하기'
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={clearData}
+                        className="hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-colors"
+                      >
+                        초기화
+                      </Button>
                     </div>
                   </div>
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+
+              {/* Analysis Results */}
+              <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+                <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-lg">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5" />
+                    분석 결과
+                  </CardTitle>
+                  <CardDescription className="text-green-100">
+                    AI가 분석한 구조화된 업무 정보
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {!analyzedData ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>업무 내용을 입력하고 분석 버튼을 클릭해주세요</p>
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[400px] pr-4">
+                      <div className="space-y-6">
+                        {/* Types */}
+                        <div>
+                          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                            <Badge variant="secondary" className="bg-blue-100 text-blue-700">분류</Badge>
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {analyzedData.types.map((type, index) => (
+                              <Badge key={index} variant="outline" className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                                {type}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Meeting Summary */}
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-lg flex items-center gap-2">
+                            <Users className="h-5 w-5 text-blue-600" />
+                            회의/음성 요약
+                          </h3>
+                          <div className="bg-blue-50 p-4 rounded-lg space-y-2">
+                            <div><strong>일시 및 장소:</strong> {analyzedData.meeting.datetime}</div>
+                            <div><strong>주요 보고 및 전달사항:</strong> {analyzedData.meeting.reports}</div>
+                            <div><strong>이상 유무 및 특이사항:</strong> {analyzedData.meeting.abnormalities}</div>
+                            <div><strong>담당자 인수인계 사항:</strong> {analyzedData.meeting.handover}</div>
+                          </div>
+                        </div>
+
+                        {/* Inspection Report */}
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-lg flex items-center gap-2">
+                            <Shield className="h-5 w-5 text-green-600" />
+                            점검/상황보고
+                          </h3>
+                          <div className="bg-green-50 p-4 rounded-lg space-y-2">
+                            <div><strong>점검/상황 발생 일시:</strong> {analyzedData.inspection.datetime}</div>
+                            <div><strong>점검 또는 상황 내용:</strong> {analyzedData.inspection.content}</div>
+                            <div><strong>조치 및 전달사항:</strong> {analyzedData.inspection.actions}</div>
+                            <div><strong>특이사항 및 추가 메모:</strong> {analyzedData.inspection.notes}</div>
+                          </div>
+                        </div>
+
+                        {/* Handover Summary */}
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-lg flex items-center gap-2">
+                            <FileText className="h-5 w-5 text-purple-600" />
+                            인수인계 요약
+                          </h3>
+                          <div className="bg-purple-50 p-4 rounded-lg space-y-2">
+                            <div><strong>주요 이슈:</strong> {analyzedData.handover.issues}</div>
+                            <div><strong>미해결 과제:</strong> {analyzedData.handover.pending}</div>
+                            <div><strong>다음 근무자 유의사항:</strong> {analyzedData.handover.notes}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="duty">
+            <DutyAssignment />
+          </TabsContent>
+        </Tabs>
 
         {/* Features */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">주요 기능</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-4 gap-6">
             <Card className="text-center p-6 hover:shadow-lg transition-shadow border-0 bg-white/80 backdrop-blur-sm">
               <FileText className="h-12 w-12 mx-auto mb-4 text-blue-600" />
               <h3 className="font-semibold mb-2">자동 분류</h3>
@@ -226,6 +247,11 @@ const Index = () => {
               <TrendingUp className="h-12 w-12 mx-auto mb-4 text-purple-600" />
               <h3 className="font-semibold mb-2">효율성 증대</h3>
               <p className="text-sm text-muted-foreground">구조화된 정보 관리로 업무 효율성 극대화</p>
+            </Card>
+            <Card className="text-center p-6 hover:shadow-lg transition-shadow border-0 bg-white/80 backdrop-blur-sm">
+              <CalendarDays className="h-12 w-12 mx-auto mb-4 text-orange-600" />
+              <h3 className="font-semibold mb-2">스마트 배정</h3>
+              <p className="text-sm text-muted-foreground">AI 기반 공정한 당직 배정으로 업무 부담 균등화</p>
             </Card>
           </div>
         </div>

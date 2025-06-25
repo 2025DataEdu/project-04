@@ -9,7 +9,81 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      duty_assignments: {
+        Row: {
+          assignment_date: string
+          backup_worker_id: number
+          created_at: string
+          duty_type: string
+          id: string
+          primary_worker_id: number
+          updated_at: string
+        }
+        Insert: {
+          assignment_date: string
+          backup_worker_id: number
+          created_at?: string
+          duty_type: string
+          id?: string
+          primary_worker_id: number
+          updated_at?: string
+        }
+        Update: {
+          assignment_date?: string
+          backup_worker_id?: number
+          created_at?: string
+          duty_type?: string
+          id?: string
+          primary_worker_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "duty_assignments_backup_worker_id_fkey"
+            columns: ["backup_worker_id"]
+            isOneToOne: false
+            referencedRelation: "근로자 리스트"
+            referencedColumns: ["일련번호"]
+          },
+          {
+            foreignKeyName: "duty_assignments_primary_worker_id_fkey"
+            columns: ["primary_worker_id"]
+            isOneToOne: false
+            referencedRelation: "근로자 리스트"
+            referencedColumns: ["일련번호"]
+          },
+        ]
+      }
+      "근로자 리스트": {
+        Row: {
+          메일주소: string | null
+          소속부서: string | null
+          이름: string | null
+          일련번호: number
+          전화번호: string | null
+          제외여부: string | null
+          직급: string | null
+        }
+        Insert: {
+          메일주소?: string | null
+          소속부서?: string | null
+          이름?: string | null
+          일련번호: number
+          전화번호?: string | null
+          제외여부?: string | null
+          직급?: string | null
+        }
+        Update: {
+          메일주소?: string | null
+          소속부서?: string | null
+          이름?: string | null
+          일련번호?: number
+          전화번호?: string | null
+          제외여부?: string | null
+          직급?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
