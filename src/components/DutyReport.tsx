@@ -12,7 +12,7 @@ import { DutyReportWithWorker } from '@/types/dutyReport';
 
 const DutyReport = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [selectedMonth, setSelectedMonth] = useState('2024-06'); // 6월 데이터로 기본 설정
   const [currentReport, setCurrentReport] = useState<DutyReportWithWorker | null>(null);
 
   const { isLoading, reports, fetchDutyReports, getDutyReportByDate } = useDutyReports();
@@ -153,8 +153,11 @@ const DutyReport = () => {
                       <h4 className="font-semibold text-sm mb-2">인수인계 현황</h4>
                       <div className="space-y-2 text-sm">
                         <div><strong>완료율:</strong> <Badge variant="outline">{currentReport.handover_completion_rate}%</Badge></div>
-                        <div><strong>대기 업무:</strong> {currentReport.handover_pending}</div>
-                        <div><strong>주요 이슈:</strong> {currentReport.handover_issues}</div>
+                        <div><strong>대기 업무:</strong> {currentReport.handover_pending || '없음'}</div>
+                        <div><strong>주요 이슈:</strong> {currentReport.handover_issues || '없음'}</div>
+                        {currentReport.handover_notes && (
+                          <div><strong>인수인계 요약:</strong> {currentReport.handover_notes}</div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -179,10 +182,10 @@ const DutyReport = () => {
                           지시사항/상황 요약
                         </h4>
                         <div className="bg-orange-50 p-3 rounded-lg space-y-1 text-sm">
-                          <div><strong>지시 일시:</strong> {currentReport.instruction_datetime}</div>
-                          <div><strong>주요 지시사항:</strong> {currentReport.instruction_content}</div>
-                          <div><strong>이상 유무:</strong> {currentReport.instruction_abnormalities}</div>
-                          <div><strong>후속 조치:</strong> {currentReport.instruction_handover}</div>
+                          <div><strong>지시 일시:</strong> {currentReport.instruction_datetime || '-'}</div>
+                          <div><strong>주요 지시사항:</strong> {currentReport.instruction_content || '-'}</div>
+                          <div><strong>이상 유무:</strong> {currentReport.instruction_abnormalities || '특이사항 없음'}</div>
+                          <div><strong>후속 조치:</strong> {currentReport.instruction_handover || '-'}</div>
                         </div>
                       </div>
 
@@ -193,10 +196,10 @@ const DutyReport = () => {
                           순찰/점검 보고
                         </h4>
                         <div className="bg-green-50 p-3 rounded-lg space-y-1 text-sm">
-                          <div><strong>순찰 시간:</strong> {currentReport.patrol_datetime}</div>
-                          <div><strong>순찰 내용:</strong> {currentReport.patrol_content}</div>
-                          <div><strong>점검 결과:</strong> {currentReport.patrol_actions}</div>
-                          <div><strong>특이사항:</strong> {currentReport.patrol_notes}</div>
+                          <div><strong>순찰 시간:</strong> {currentReport.patrol_datetime || '-'}</div>
+                          <div><strong>순찰 내용:</strong> {currentReport.patrol_content || '-'}</div>
+                          <div><strong>점검 결과:</strong> {currentReport.patrol_actions || '-'}</div>
+                          <div><strong>특이사항:</strong> {currentReport.patrol_notes || '특이사항 없음'}</div>
                         </div>
                       </div>
 
@@ -207,9 +210,10 @@ const DutyReport = () => {
                           인수인계 사항
                         </h4>
                         <div className="bg-purple-50 p-3 rounded-lg space-y-1 text-sm">
-                          <div><strong>주요 이슈:</strong> {currentReport.handover_issues}</div>
-                          <div><strong>미해결 과제:</strong> {currentReport.handover_pending}</div>
-                          <div><strong>다음 근무자 유의사항:</strong> {currentReport.handover_notes}</div>
+                          <div><strong>주요 이슈:</strong> {currentReport.handover_issues || '없음'}</div>
+                          <div><strong>미해결 과제:</strong> {currentReport.handover_pending || '없음'}</div>
+                          <div><strong>다음 근무자 유의사항:</strong> {currentReport.handover_notes || '특별한 사항 없음'}</div>
+                          <div><strong>업무 완료율:</strong> {currentReport.handover_completion_rate}%</div>
                         </div>
                       </div>
                     </div>
@@ -219,7 +223,7 @@ const DutyReport = () => {
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              선택한 날짜에 대한 당직 보고서가 없습니다.
+              선택한 날짜({selectedDate})에 대한 당직 보고서가 없습니다.
             </div>
           )}
         </CardContent>
@@ -229,7 +233,7 @@ const DutyReport = () => {
       <Card>
         <CardHeader>
           <CardTitle>월별 보고서 목록</CardTitle>
-          <CardDescription>{selectedMonth}의 당직 보고서 현황</CardDescription>
+          <CardDescription>{selectedMonth}의 당직 보고서 현황 (총 {reports.length}건)</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-7 gap-2">
