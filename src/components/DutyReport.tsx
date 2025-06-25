@@ -9,7 +9,7 @@ import { DutyReportCalendar } from './DutyReportCalendar';
 
 const DutyReport = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedMonth, setSelectedMonth] = useState('2024-06'); // 6월 데이터로 기본 설정
+  const [selectedMonth, setSelectedMonth] = useState('2025-06'); // 2025년 6월로 업데이트
   const [currentReport, setCurrentReport] = useState<DutyReportWithWorker | null>(null);
 
   const { isLoading, reports, fetchDutyReports, getDutyReportByDate } = useDutyReports();
