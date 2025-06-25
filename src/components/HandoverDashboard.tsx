@@ -2,11 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, FileText, AlertTriangle, Clock, ChevronLeft, ChevronRight, Users } from "lucide-react";
+import { useDutyReports } from '@/hooks/useDutyReports';
+import { DutyReportWithWorker } from '@/types/dutyReport';
 
 interface HandoverReport {
   id: string;
@@ -29,64 +29,59 @@ interface HandoverReport {
 const HandoverDashboard = () => {
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [handoverReports, setHandoverReports] = useState<HandoverReport[]>([]);
+  const { reports, fetchDutyReports } = useDutyReports();
 
-  // Mock data for demonstration
+  // 실제 당직 보고서 데이터를 인수인계 보고서 형태로 변환
+  const convertDutyReportsToHandover = (dutyReports: DutyReportWithWorker[]): HandoverReport[] => {
+    return dutyReports.map(report => {
+      const reportDate = new Date(report.report_date);
+      const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+      
+      return {
+        id: report.id,
+        date: report.report_date,
+        dayOfWeek: dayNames[reportDate.getDay()],
+        dutyType: report.assignment?.duty_type || '당직',
+        reportContent: {
+          commanderInstructions: report.instruction_content || '지시사항 없음',
+          patrolReport: report.patrol_content || '순찰 내용 없음',
+          handoverSummary: report.handover_notes || '인수인계 사항 없음',
+          issues: report.handover_issues || '없음',
+          pendingTasks: report.handover_pending || '대기 중인 업무 없음',
+          nextDutyNotes: report.instruction_handover || '전달사항 없음'
+        },
+        reportedBy: report.worker_name || '알 수 없음',
+        department: report.worker_department || '알 수 없음',
+        reportTime: report.patrol_datetime?.split(' ')[1] || '미기록'
+      };
+    });
+  };
+
+  // 주간 데이터 로드
   useEffect(() => {
-    const mockReports: HandoverReport[] = [
-      {
-        id: '1',
-        date: '2024-06-24',
-        dayOfWeek: '월요일',
-        dutyType: '평일야간',
-        reportContent: {
-          commanderInstructions: '당직사령관 지시: 각 시도 재난 정보 확인, 산불대비 상황 점검',
-          patrolReport: '17:00-18:00 정기 순찰 완료, 시설 전반 점검 이상 없음',
-          handoverSummary: '산불대비 관련 지시사항 이행 완료, 재난 정보 확인 결과 공유 필요',
-          issues: '특이사항 없음',
-          pendingTasks: '화요일 당직자에게 산불대비 상황 지속 모니터링 요청',
-          nextDutyNotes: '재난정보시스템 정기 확인 필요, 비상연락망 점검'
-        },
-        reportedBy: '김당직',
-        department: '총무과',
-        reportTime: '06:30'
-      },
-      {
-        id: '2',
-        date: '2024-06-25',
-        dayOfWeek: '화요일',
-        dutyType: '평일야간',
-        reportContent: {
-          commanderInstructions: '전일 산불대비 상황 지속 모니터링, 기상특보 대응 준비',
-          patrolReport: '17:00-18:00 정기 순찰, 기상특보 대응 시설 점검 완료',
-          handoverSummary: '기상특보 발령으로 인한 비상대응체계 가동, 관련 부서 연락 완료',
-          issues: '기상특보 발령 (강풍주의보)',
-          pendingTasks: '수요일 당직자에게 기상상황 지속 모니터링 요청',
-          nextDutyNotes: '기상청 특보 현황 수시 확인, 비상연락체계 유지'
-        },
-        reportedBy: '이당직',
-        department: '안전관리과',
-        reportTime: '06:45'
-      },
-      {
-        id: '3',
-        date: '2024-06-26',
-        dayOfWeek: '수요일',
-        dutyType: '평일야간',
-        reportContent: {
-          commanderInstructions: '기상특보 해제 확인, 일반 당직업무 복귀',
-          patrolReport: '17:00-18:00 정기 순찰, 기상특보 해제로 정상 운영',
-          handoverSummary: '기상특보 해제 확인, 정상 당직업무로 복귀',
-          issues: '없음',
-          pendingTasks: '목요일 정상 당직업무 인계',
-          nextDutyNotes: '정상 당직업무 수행'
-        },
-        reportedBy: '박당직',
-        department: '기획조정실',
-        reportTime: '06:20'
-      }
-    ];
-    setHandoverReports(mockReports);
-  }, []);
+    const loadWeekData = async () => {
+      const weekDays = getWeekDays(selectedWeek);
+      const startDate = weekDays[0].toISOString().split('T')[0];
+      const endDate = weekDays[6].toISOString().split('T')[0];
+      
+      // 해당 주의 연도와 월 계산
+      const year = weekDays[0].getFullYear();
+      const month = weekDays[0].getMonth() + 1;
+      
+      const weekReports = await fetchDutyReports(year, month);
+      
+      // 해당 주에 해당하는 보고서만 필터링
+      const filteredReports = weekReports.filter(report => {
+        const reportDate = report.report_date;
+        return reportDate >= startDate && reportDate <= endDate;
+      });
+      
+      const convertedReports = convertDutyReportsToHandover(filteredReports);
+      setHandoverReports(convertedReports);
+    };
+
+    loadWeekData();
+  }, [selectedWeek, fetchDutyReports]);
 
   const getWeekDays = (date: Date) => {
     const week = [];
@@ -134,7 +129,7 @@ const HandoverDashboard = () => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              당직 인수인계 대시보드
+              당직 인수인계 대시보드 (실시간 연동)
             </div>
             <div className="flex items-center gap-4">
               <button
@@ -155,7 +150,7 @@ const HandoverDashboard = () => {
             </div>
           </CardTitle>
           <CardDescription className="text-emerald-100">
-            주간별 당직 인수인계 사항을 확인하고 업무 연속성을 유지하세요
+            당직 보고서 기반 실시간 인수인계 현황 - 업무 연속성을 유지하세요
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6">
@@ -209,7 +204,7 @@ const HandoverDashboard = () => {
                           <div className="text-xs">
                             <div className="font-medium text-orange-600 flex items-center gap-1 mb-1">
                               <AlertTriangle className="h-3 w-3" />
-                              주요 지시사항
+                              당직사령관 지시사항
                             </div>
                             <div className="text-xs bg-orange-50 p-2 rounded text-gray-700 line-clamp-3">
                               {report.reportContent.commanderInstructions}
@@ -217,22 +212,22 @@ const HandoverDashboard = () => {
                           </div>
                           
                           <div className="text-xs">
-                            <div className="font-medium text-green-600 flex items-center gap-1 mb-1">
-                              <Clock className="h-3 w-3" />
-                              순찰 보고
-                            </div>
-                            <div className="text-xs bg-green-50 p-2 rounded text-gray-700 line-clamp-2">
-                              {report.reportContent.patrolReport}
-                            </div>
-                          </div>
-                          
-                          <div className="text-xs">
                             <div className="font-medium text-purple-600 flex items-center gap-1 mb-1">
                               <FileText className="h-3 w-3" />
-                              인수인계 사항
+                              인수인계 요약
                             </div>
                             <div className="text-xs bg-purple-50 p-2 rounded text-gray-700 line-clamp-3">
                               {report.reportContent.handoverSummary}
+                            </div>
+                          </div>
+
+                          <div className="text-xs">
+                            <div className="font-medium text-blue-600 flex items-center gap-1 mb-1">
+                              <Clock className="h-3 w-3" />
+                              다음 당직자 전달사항
+                            </div>
+                            <div className="text-xs bg-blue-50 p-2 rounded text-gray-700 line-clamp-3">
+                              {report.reportContent.nextDutyNotes}
                             </div>
                           </div>
                           
@@ -244,6 +239,13 @@ const HandoverDashboard = () => {
                               </div>
                             </div>
                           )}
+
+                          <div className="text-xs">
+                            <div className="font-medium text-green-600 mb-1">미처리 업무</div>
+                            <div className="text-xs bg-green-50 p-2 rounded text-gray-700">
+                              {report.reportContent.pendingTasks}
+                            </div>
+                          </div>
                           
                           <div className="text-xs text-center text-muted-foreground mt-2">
                             보고시간: {report.reportTime}
