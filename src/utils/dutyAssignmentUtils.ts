@@ -43,10 +43,12 @@ export const createDutyAssignment = async (
   return result;
 };
 
+// 수정된 요일 판단 로직 - 월요일(1)부터 금요일(5)까지가 평일
 export const isWeekday = (dayOfWeek: number): boolean => {
   return dayOfWeek >= 1 && dayOfWeek <= 5;
 };
 
+// 수정된 요일 판단 로직 - 토요일(6)과 일요일(0)이 주말
 export const isWeekend = (dayOfWeek: number): boolean => {
   return dayOfWeek === 0 || dayOfWeek === 6;
 };
