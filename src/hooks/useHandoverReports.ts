@@ -70,17 +70,22 @@ export const useHandoverReports = (selectedWeek: Date) => {
       setError(null);
       
       try {
-        const weekDays = getWeekDays(selectedWeek);
-        const startDate = weekDays[0].toISOString().split('T')[0];
-        const endDate = weekDays[6].toISOString().split('T')[0];
+        const startDate = new Date(selectedWeek);
+        const day = startDate.getDay();
+        const diff = startDate.getDate() - day + (day === 0 ? -6 : 1);
+        startDate.setDate(diff);
         
-        // 날짜 범위로 직접 필터링하여 해당 주의 모든 데이터를 가져옴
-        const year = parseInt(startDate.split('-')[0]);
-        const month = parseInt(startDate.split('-')[1]);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
         
-        console.log(`Loading handover data for week ${startDate} to ${endDate}`);
+        const startDateString = startDate.toISOString().split('T')[0];
+        const endDateString = endDate.toISOString().split('T')[0];
         
-        // 해당 월의 모든 데이터를 가져옴
+        const year = startDate.getFullYear();
+        const month = startDate.getMonth() + 1;
+        
+        console.log(`Loading handover data for week ${startDateString} to ${endDateString}`);
+        
         const monthReports = await fetchDutyReports(year, month);
         
         if (!monthReports) {
@@ -89,14 +94,13 @@ export const useHandoverReports = (selectedWeek: Date) => {
           return;
         }
 
-        // 해당 주에 해당하는 데이터만 필터링
         const weekReports = monthReports.filter(report => {
           if (!report.report_date) return false;
           const reportDate = report.report_date;
-          return reportDate >= startDate && reportDate <= endDate;
+          return reportDate >= startDateString && reportDate <= endDateString;
         });
         
-        console.log(`Found ${weekReports.length} reports for week ${startDate} to ${endDate}`);
+        console.log(`Found ${weekReports.length} reports for week ${startDateString} to ${endDateString}`);
         console.log('Week reports:', weekReports.map(r => ({ date: r.report_date, worker: r.worker_name, type: r.assignment?.duty_type })));
         
         const convertedReports = convertDutyReportsToHandover(weekReports);
@@ -113,7 +117,7 @@ export const useHandoverReports = (selectedWeek: Date) => {
     };
 
     loadWeekData();
-  }, [selectedWeek, fetchDutyReports, convertDutyReportsToHandover, getWeekDays]);
+  }, [selectedWeek]); // 의존성 배열에서 함수들 제거
 
   return {
     handoverReports,
