@@ -58,10 +58,10 @@ export const useDutyReports = () => {
         console.error('Error fetching duty assignments:', assignmentsError);
       }
 
-      // 데이터 조합 - 정확한 날짜 매칭을 위해 수정
+      // 데이터 조합 - assignment_id를 사용하여 정확한 매칭
       const reportsWithWorker: DutyReportWithWorker[] = reportsData.map(report => {
-        // report_date와 정확히 일치하는 assignment 찾기
-        const matchingAssignment = assignments?.find(a => a.assignment_date === report.report_date);
+        // assignment_id로 정확한 당직 배정 찾기
+        const matchingAssignment = assignments?.find(a => a.id === report.assignment_id);
         
         // duty_worker_id로 근로자 정보 찾기 (보고서에 직접 저장된 당직자 ID 사용)
         const worker = workers?.find(w => w.일련번호 === report.duty_worker_id);
@@ -127,11 +127,10 @@ export const useDutyReports = () => {
         .eq('일련번호', reportData.duty_worker_id)
         .single();
 
-      // 정확한 날짜로 당직 배정 정보 조회
+      // assignment_id로 정확한 당직 배정 정보 조회
       const { data: assignment } = await supabase
         .from('duty_assignments')
         .select('*')
-        .eq('assignment_date', date)
         .eq('id', reportData.assignment_id)
         .single();
 
