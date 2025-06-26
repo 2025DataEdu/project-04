@@ -30,14 +30,14 @@ export const HandoverDayCard: React.FC<HandoverDayCardProps> = ({
       <CardHeader className="pb-3">
         <div className="text-center">
           <div className={`text-sm font-medium ${
-            dayIndex === 0 ? 'text-red-600' : 
-            dayIndex === 6 ? 'text-blue-600' : 'text-gray-700'
+            dayIndex === 6 ? 'text-red-600' : 
+            dayIndex === 5 ? 'text-blue-600' : 'text-gray-700'
           }`}>
             {weekDayNames[dayIndex]}
           </div>
           <div className={`text-lg font-bold ${
-            dayIndex === 0 ? 'text-red-600' : 
-            dayIndex === 6 ? 'text-blue-600' : 'text-gray-900'
+            dayIndex === 6 ? 'text-red-600' : 
+            dayIndex === 5 ? 'text-blue-600' : 'text-gray-900'
           }`}>
             {day.getDate()}
           </div>
