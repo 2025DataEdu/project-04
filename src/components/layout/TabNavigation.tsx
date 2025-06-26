@@ -57,6 +57,21 @@ const TabNavigation = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <TabsTrigger 
+                value="report" 
+                className="flex flex-col items-center gap-1 px-4 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-gray-50 transition-all duration-200"
+              >
+                <ClipboardList className="h-5 w-5" />
+                <span className="text-xs font-medium">당직 보고서</span>
+              </TabsTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>당직 보고서 작성 및 관리</p>
+            </TooltipContent>
+          </Tooltip>
+          
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <TabsTrigger 
                 value="penalty" 
                 className="flex flex-col items-center gap-1 px-4 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-gray-50 transition-all duration-200"
               >
@@ -96,21 +111,6 @@ const TabNavigation = () => {
             </TooltipTrigger>
             <TooltipContent>
               <p>체계적인 민원 접수, 처리 및 해결방법 추천</p>
-            </TooltipContent>
-          </Tooltip>
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <TabsTrigger 
-                value="report" 
-                className="flex flex-col items-center gap-1 px-4 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 hover:bg-gray-50 transition-all duration-200"
-              >
-                <ClipboardList className="h-5 w-5" />
-                <span className="text-xs font-medium">당직 보고서</span>
-              </TabsTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>당직 보고서 작성 및 관리</p>
             </TooltipContent>
           </Tooltip>
         </TabsList>

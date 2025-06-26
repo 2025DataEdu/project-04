@@ -36,6 +36,10 @@ const Index = () => {
               <HandoverDashboard />
             </TabsContent>
 
+            <TabsContent value="report" className="mt-0">
+              <DutyReport />
+            </TabsContent>
+
             <TabsContent value="penalty" className="mt-0">
               <PenaltyDutyManagement />
             </TabsContent>
@@ -46,10 +50,6 @@ const Index = () => {
 
             <TabsContent value="complaint-management" className="mt-0">
               <ComplaintManagement />
-            </TabsContent>
-
-            <TabsContent value="report" className="mt-0">
-              <DutyReport />
             </TabsContent>
           </div>
         </Tabs>
