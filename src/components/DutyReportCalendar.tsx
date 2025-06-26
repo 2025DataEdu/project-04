@@ -134,11 +134,6 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
                               {dayReports[0].worker_name}
                             </div>
                           </div>
-                          {dayReports[0].assignment?.duty_type && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              {dayReports[0].assignment.duty_type === '평일야간' ? '야간' : '당직'}
-                            </div>
-                          )}
                         </div>
                       ) : (
                         // 주말 보고서 (2개, 주간/야간으로 구분하여 표시)
@@ -164,9 +159,6 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
                                 }`}>
                                   {report.worker_name}
                                 </div>
-                              </div>
-                              <div className="text-xs text-gray-500 mt-0.5">
-                                {report.assignment?.duty_type === '주말주간' ? '주간' : '야간'}
                               </div>
                             </div>
                           ))}
