@@ -14,10 +14,29 @@ export const useDutyAssignment = () => {
   const assignMonthlyDuties = async (year: number, month: number) => {
     setIsLoading(true);
     try {
+      console.log(`Starting monthly duty assignment for ${year}년 ${month}월`);
+      
       const workers = await getAvailableWorkers();
+      
+      if (!workers || workers.length === 0) {
+        toast.error('배정 가능한 근로자가 없습니다. 근로자 목록을 확인해주세요.');
+        return [];
+      }
+      
+      if (workers.length < 2) {
+        toast.error('당직 배정을 위해서는 최소 2명의 근로자가 필요합니다.');
+        return [];
+      }
+      
+      console.log(`Found ${workers.length} available workers`);
       
       // 당직 배정 수행
       const assignments = await performMonthlyAssignment(year, month, workers);
+      
+      if (!assignments || assignments.length === 0) {
+        toast.error('당직 배정에 실패했습니다. 다시 시도해주세요.');
+        return [];
+      }
       
       // 테스트를 위한 당직 보고서 자동 생성 로직
       // 현재 날짜의 전날까지의 배정에 대해서만 보고서 생성
@@ -61,7 +80,14 @@ export const useDutyAssignment = () => {
       return assignments;
     } catch (error) {
       console.error('Error in assignMonthlyDuties:', error);
-      toast.error('월별 당직 배정에 실패했습니다.');
+      
+      // 더 구체적인 에러 메시지 표시
+      if (error instanceof Error) {
+        toast.error(`월별 당직 배정 실패: ${error.message}`);
+      } else {
+        toast.error('월별 당직 배정에 실패했습니다. 콘솔을 확인해주세요.');
+      }
+      
       return [];
     } finally {
       setIsLoading(false);
@@ -69,7 +95,12 @@ export const useDutyAssignment = () => {
   };
 
   const getDutyAssignments = async (startDate?: string, endDate?: string): Promise<DutyAssignmentWithWorkers[]> => {
-    return fetchDutyAssignments(startDate, endDate);
+    try {
+      return await fetchDutyAssignments(startDate, endDate);
+    } catch (error) {
+      console.error('Error getting duty assignments:', error);
+      return [];
+    }
   };
 
   return {
