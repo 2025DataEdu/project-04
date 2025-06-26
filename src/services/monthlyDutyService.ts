@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Worker, DutyAssignment } from '@/types/duty';
 import { 
@@ -22,7 +21,20 @@ export const assignMonthlyDuties = async (
     
     console.log(`Deleting existing assignments for ${startDate} to ${endDate}`);
     
-    // 1단계: 해당 기간의 당직 배정 ID들을 먼저 조회
+    // 1단계: 해당 기간의 모든 당직 보고서 삭제 (날짜 기반)
+    console.log('Deleting all duty reports in date range');
+    const { error: deleteAllReportsError } = await supabase
+      .from('duty_reports')
+      .delete()
+      .gte('report_date', startDate)
+      .lte('report_date', endDate);
+
+    if (deleteAllReportsError) {
+      console.error('Error deleting all duty reports:', deleteAllReportsError);
+      throw new Error(`기존 당직 보고서 삭제 실패: ${deleteAllReportsError.message}`);
+    }
+
+    // 2단계: 해당 기간의 당직 배정 ID들을 조회
     const { data: existingAssignments, error: fetchError } = await supabase
       .from('duty_assignments')
       .select('id')
@@ -34,23 +46,24 @@ export const assignMonthlyDuties = async (
       throw new Error(`기존 배정 조회 실패: ${fetchError.message}`);
     }
 
-    // 2단계: 해당 assignment_id들과 연결된 당직 보고서 삭제
+    // 3단계: 혹시 남아있는 연결된 당직 보고서들 삭제 (assignment_id 기반)
     if (existingAssignments && existingAssignments.length > 0) {
       const assignmentIds = existingAssignments.map(a => a.id);
-      console.log(`Deleting duty reports for ${assignmentIds.length} assignments`);
+      console.log(`Deleting any remaining duty reports for ${assignmentIds.length} assignments`);
       
-      const { error: deleteReportsError } = await supabase
+      const { error: deleteLinkedReportsError } = await supabase
         .from('duty_reports')
         .delete()
         .in('assignment_id', assignmentIds);
 
-      if (deleteReportsError) {
-        console.error('Error deleting duty reports:', deleteReportsError);
-        throw new Error(`기존 당직 보고서 삭제 실패: ${deleteReportsError.message}`);
+      if (deleteLinkedReportsError) {
+        console.error('Error deleting linked duty reports:', deleteLinkedReportsError);
+        // 이미 1단계에서 날짜 기반으로 삭제했으므로 여기서는 경고만 출력
+        console.warn('Some linked reports may still exist, but continuing...');
       }
     }
 
-    // 3단계: 당직 배정 삭제
+    // 4단계: 당직 배정 삭제
     const { error: deleteError } = await supabase
       .from('duty_assignments')
       .delete()
