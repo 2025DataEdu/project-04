@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { DutyAssignment } from '@/types/duty';
 
@@ -96,6 +95,72 @@ export const getDutyReportsByMonth = async (year: number, month: number) => {
     return data || [];
   } catch (error) {
     console.error('Error in getDutyReportsByMonth:', error);
+    throw error;
+  }
+};
+
+export const createDutyReportFromAnalysis = async (analysisData: any, inputContent: string) => {
+  try {
+    console.log('Creating duty report from analysis data:', analysisData);
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 오늘 날짜로 당직 배정이 있는지 확인
+    const { data: assignments, error: assignmentError } = await supabase
+      .from('duty_assignments')
+      .select('*')
+      .eq('assignment_date', today)
+      .limit(1);
+
+    if (assignmentError) {
+      console.error('Error checking duty assignments:', assignmentError);
+      throw assignmentError;
+    }
+
+    let assignmentId = null;
+    let dutyWorkerId = null;
+
+    // 당직 배정이 있으면 해당 정보 사용, 없으면 임시로 1번 직원 사용
+    if (assignments && assignments.length > 0) {
+      assignmentId = assignments[0].id;
+      dutyWorkerId = assignments[0].primary_worker_id;
+    } else {
+      dutyWorkerId = 1; // 기본값으로 1번 직원 사용
+    }
+
+    const reportToInsert = {
+      report_date: today,
+      assignment_id: assignmentId,
+      duty_worker_id: dutyWorkerId,
+      instruction_datetime: analysisData.meeting.datetime,
+      instruction_content: analysisData.meeting.reports,
+      instruction_abnormalities: analysisData.meeting.abnormalities,
+      instruction_handover: analysisData.meeting.handover,
+      patrol_datetime: analysisData.inspection.datetime,
+      patrol_content: analysisData.inspection.content,
+      patrol_actions: analysisData.inspection.actions,
+      patrol_notes: analysisData.inspection.notes,
+      handover_issues: analysisData.handover.issues,
+      handover_pending: analysisData.handover.pending,
+      handover_notes: analysisData.handover.notes,
+      handover_completion_rate: parseInt(analysisData.handover.completionRate.replace('%', '')),
+      report_types: analysisData.types
+    };
+
+    const { data, error } = await supabase
+      .from('duty_reports')
+      .insert(reportToInsert)
+      .select();
+
+    if (error) {
+      console.error('Error creating duty report from analysis:', error);
+      throw error;
+    }
+
+    console.log('Successfully created duty report from analysis:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in createDutyReportFromAnalysis:', error);
     throw error;
   }
 };
