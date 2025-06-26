@@ -97,7 +97,7 @@ export const penaltyDutyService = {
       }
 
       return {
-        worker_name: worker.이름
+        worker_name: worker['이름']
       };
     } catch (error) {
       console.error('Error in getDutyWorkerByDate:', error);
