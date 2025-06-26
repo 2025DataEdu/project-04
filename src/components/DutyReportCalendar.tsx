@@ -49,9 +49,12 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
       calendarDays.push(null);
     }
     
-    // 현재 달의 날짜들
+    // 현재 달의 날짜들을 정확한 형식으로 생성
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateString = `${selectedMonth}-${day.toString().padStart(2, '0')}`;
+      // 날짜를 정확하게 YYYY-MM-DD 형식으로 생성
+      const month_str = month.toString().padStart(2, '0');
+      const day_str = day.toString().padStart(2, '0');
+      const dateString = `${year}-${month_str}-${day_str}`;
       calendarDays.push(dateString);
     }
     
@@ -95,6 +98,9 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
             const isSelected = date === selectedDate;
             const dayOfWeek = new Date(date).getDay();
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            
+            // 디버깅을 위한 로그 추가
+            console.log(`Calendar date: ${date}, Reports found: ${dayReports.length}, Day: ${new Date(date).getDate()}`);
             
             return (
               <Button
