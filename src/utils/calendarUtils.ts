@@ -14,14 +14,17 @@ export const getDaysInMonth = (date: Date) => {
     days.push(null);
   }
   
-  // Add all days of the month
+  // Add all days of the month - 날짜 생성을 더 정확하게 수정
   for (let day = 1; day <= daysInMonth; day++) {
-    days.push(new Date(year, month, day));
+    // UTC 시간대로 날짜 생성하여 시간대 문제 방지
+    const dayDate = new Date(year, month, day, 12, 0, 0, 0);
+    days.push(dayDate);
   }
   
   console.log(`Calendar days generated for ${year}-${month + 1}: ${daysInMonth} days`);
   console.log('Days array length:', days.length);
   console.log('Last day in array:', days[days.length - 1]);
+  console.log('Last day date check:', days[days.length - 1]?.getDate());
   
   return days;
 };
