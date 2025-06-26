@@ -20,18 +20,37 @@ export const assignMonthlyDuties = async (
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month, 0).toISOString().split('T')[0];
     
-    // 1단계: 먼저 당직 보고서 삭제 (duty_reports가 duty_assignments를 참조하므로)
-    const { error: deleteReportsError } = await supabase
-      .from('duty_reports')
-      .delete()
-      .gte('report_date', startDate)
-      .lte('report_date', endDate);
+    console.log(`Deleting existing assignments for ${startDate} to ${endDate}`);
+    
+    // 1단계: 해당 기간의 당직 배정 ID들을 먼저 조회
+    const { data: existingAssignments, error: fetchError } = await supabase
+      .from('duty_assignments')
+      .select('id')
+      .gte('assignment_date', startDate)
+      .lte('assignment_date', endDate);
 
-    if (deleteReportsError) {
-      throw new Error(`기존 당직 보고서 삭제 실패: ${deleteReportsError.message}`);
+    if (fetchError) {
+      console.error('Error fetching existing assignments:', fetchError);
+      throw new Error(`기존 배정 조회 실패: ${fetchError.message}`);
     }
 
-    // 2단계: 당직 배정 삭제
+    // 2단계: 해당 assignment_id들과 연결된 당직 보고서 삭제
+    if (existingAssignments && existingAssignments.length > 0) {
+      const assignmentIds = existingAssignments.map(a => a.id);
+      console.log(`Deleting duty reports for ${assignmentIds.length} assignments`);
+      
+      const { error: deleteReportsError } = await supabase
+        .from('duty_reports')
+        .delete()
+        .in('assignment_id', assignmentIds);
+
+      if (deleteReportsError) {
+        console.error('Error deleting duty reports:', deleteReportsError);
+        throw new Error(`기존 당직 보고서 삭제 실패: ${deleteReportsError.message}`);
+      }
+    }
+
+    // 3단계: 당직 배정 삭제
     const { error: deleteError } = await supabase
       .from('duty_assignments')
       .delete()
@@ -39,8 +58,11 @@ export const assignMonthlyDuties = async (
       .lte('assignment_date', endDate);
 
     if (deleteError) {
+      console.error('Error deleting duty assignments:', deleteError);
       throw new Error(`기존 배정 삭제 실패: ${deleteError.message}`);
     }
+
+    console.log('Successfully deleted existing assignments and reports');
 
     // 해당 월의 모든 날짜 생성
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -80,6 +102,7 @@ export const assignMonthlyDuties = async (
       );
       
       if (result.error) {
+        console.error('Error creating duty assignment:', result.error);
         throw new Error(`당직 배정 생성 실패: ${result.error.message}`);
       }
       
@@ -98,6 +121,7 @@ export const assignMonthlyDuties = async (
       }
     }
     
+    console.log(`Successfully created ${assignments.length} assignments`);
     return assignments;
   } catch (error) {
     console.error('Monthly duty assignment error:', error);
