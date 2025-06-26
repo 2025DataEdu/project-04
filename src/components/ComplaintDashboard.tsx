@@ -172,7 +172,7 @@ const ComplaintDashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
-      </div>
+      </Card>
     </div>
   );
 };
