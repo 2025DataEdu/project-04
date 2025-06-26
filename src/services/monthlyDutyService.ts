@@ -16,9 +16,11 @@ export const assignMonthlyDuties = async (
   workers: Worker[]
 ): Promise<DutyAssignment[]> => {
   try {
-    // 정확한 월의 첫날과 마지막날 계산 (month는 1-12, JavaScript Date는 0-11을 사용)
+    // 정확한 월의 첫날과 마지막날 계산
+    // JavaScript Date는 0-based month를 사용하므로 month - 1을 사용
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // month를 그대로 사용하여 해당 월의 마지막 날
+    // 해당 월의 마지막 날을 구하기 위해서는 다음 달의 0일을 사용
+    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
     
     console.log(`Processing ${year}년 ${month}월 assignments`);
     console.log(`Date range: ${startDate} to ${endDate}`);
@@ -38,8 +40,8 @@ export const assignMonthlyDuties = async (
 
     console.log('Successfully deleted existing assignments and related reports');
 
-    // 해당 월의 모든 날짜 생성 (정확한 월의 일수 계산)
-    const daysInMonth = new Date(year, month, 0).getDate(); // month를 그대로 사용하여 해당 월의 일수 계산
+    // 해당 월의 일수 계산 - JavaScript Date의 0-based month 특성 활용
+    const daysInMonth = new Date(year, month, 0).getDate();
     console.log(`Days in ${year}년 ${month}월: ${daysInMonth}`);
     
     const assignments: DutyAssignment[] = [];
@@ -48,7 +50,7 @@ export const assignMonthlyDuties = async (
     const workerCounts = initializeWorkerCounts(workers);
     
     for (let day = 1; day <= daysInMonth; day++) {
-      // 정확한 월로 날짜 생성 (month - 1을 사용하여 JavaScript의 0-based month에 맞춤)
+      // 정확한 날짜 생성 - JavaScript의 0-based month 사용
       const currentDate = new Date(year, month - 1, day);
       const dayOfWeek = currentDate.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
       const dateString = currentDate.toISOString().split('T')[0];
