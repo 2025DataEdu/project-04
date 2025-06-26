@@ -16,10 +16,22 @@ export const assignMonthlyDuties = async (
   workers: Worker[]
 ): Promise<DutyAssignment[]> => {
   try {
-    // 기존 배정 데이터 삭제
+    // 기존 배정 데이터 삭제 (외래 키 제약조건 때문에 순서 중요)
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month, 0).toISOString().split('T')[0];
     
+    // 1단계: 먼저 당직 보고서 삭제 (duty_reports가 duty_assignments를 참조하므로)
+    const { error: deleteReportsError } = await supabase
+      .from('duty_reports')
+      .delete()
+      .gte('report_date', startDate)
+      .lte('report_date', endDate);
+
+    if (deleteReportsError) {
+      throw new Error(`기존 당직 보고서 삭제 실패: ${deleteReportsError.message}`);
+    }
+
+    // 2단계: 당직 배정 삭제
     const { error: deleteError } = await supabase
       .from('duty_assignments')
       .delete()
