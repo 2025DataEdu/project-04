@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarDays } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { CalendarDays, HelpCircle } from "lucide-react";
 import { useDutyAssignment } from '@/hooks/useDutyAssignment';
 import DutyCalendar from './DutyCalendar';
 
@@ -28,6 +29,19 @@ const DutyAssignment = () => {
           <CardTitle className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5" />
             월단위 당직 배정
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle className="h-4 w-4 ml-2 cursor-help opacity-80 hover:opacity-100 transition-opacity" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs bg-white text-gray-900 border shadow-lg p-3">
+                  <div className="space-y-1 text-sm">
+                    <p>• 개인별, 부서별, 직급별로 공정하게 배정</p>
+                    <p>• 휴가, 출장 등으로 인해 근무 불가일 경우 제외</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardTitle>
           <CardDescription className="text-orange-100">
             한 달 전체의 당직을 균등하게 자동 배정합니다 (근무자별 배정 횟수 최적화)
