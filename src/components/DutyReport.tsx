@@ -10,9 +10,9 @@ import { DutyReportCalendar } from './DutyReportCalendar';
 const DutyReport = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState('2025-06'); // 2025년 6월로 업데이트
-  const [currentReport, setCurrentReport] = useState<DutyReportWithWorker | null>(null);
+  const [currentReports, setCurrentReports] = useState<DutyReportWithWorker[]>([]);
 
-  const { isLoading, reports, fetchDutyReports, getDutyReportByDate } = useDutyReports();
+  const { isLoading, reports, fetchDutyReports, getDutyReportsByDate } = useDutyReports();
 
   useEffect(() => {
     const [year, month] = selectedMonth.split('-').map(Number);
@@ -20,11 +20,11 @@ const DutyReport = () => {
   }, [selectedMonth]);
 
   useEffect(() => {
-    const loadReportForDate = async () => {
-      const report = await getDutyReportByDate(selectedDate);
-      setCurrentReport(report);
+    const loadReportsForDate = async () => {
+      const reportsForDate = await getDutyReportsByDate(selectedDate);
+      setCurrentReports(reportsForDate);
     };
-    loadReportForDate();
+    loadReportsForDate();
   }, [selectedDate]);
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -60,10 +60,14 @@ const DutyReport = () => {
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-purple-500 border-t-transparent" />
         </div>
-      ) : currentReport ? (
-        <div className="grid lg:grid-cols-2 gap-6">
-          <DutyReportSummary report={currentReport} />
-          <DutyReportDetails report={currentReport} />
+      ) : currentReports.length > 0 ? (
+        <div className="space-y-6">
+          {currentReports.map((report, index) => (
+            <div key={report.id} className="grid lg:grid-cols-2 gap-6">
+              <DutyReportSummary report={report} />
+              <DutyReportDetails report={report} />
+            </div>
+          ))}
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
