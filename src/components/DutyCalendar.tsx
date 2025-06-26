@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,12 +13,17 @@ const DutyCalendar = () => {
   const { getDutyAssignments } = useDutyAssignment();
 
   const loadAssignments = async (year: number, month: number) => {
+    // 월의 첫째 날과 마지막 날을 정확히 계산
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+    const lastDayOfMonth = new Date(year, month, 0).getDate();
+    const endDate = new Date(year, month - 1, lastDayOfMonth).toISOString().split('T')[0];
+    
+    console.log(`Loading assignments for ${year}-${month}: ${startDate} to ${endDate}`);
     
     try {
       const data = await getDutyAssignments(startDate, endDate);
       if (Array.isArray(data)) {
+        console.log(`Loaded ${data.length} assignments for ${year}-${month}`);
         setAssignments(data);
       } else {
         setAssignments([]);
@@ -64,9 +68,10 @@ const DutyCalendar = () => {
     const day = date.getDate().toString().padStart(2, '0');
     const dateString = `${year}-${month}-${day}`;
     
-    console.log(`Calendar date: ${dateString}, Reports found: ${assignments.filter(assignment => assignment.assignment_date === dateString).length}, Day: ${date.getDate()}`);
+    const dateAssignments = assignments.filter(assignment => assignment.assignment_date === dateString);
+    console.log(`Calendar date: ${dateString}, Reports found: ${dateAssignments.length}, Day: ${date.getDate()}`);
     
-    return assignments.filter(assignment => assignment.assignment_date === dateString);
+    return dateAssignments;
   };
 
   const getDutyTypeColor = (dutyType: string) => {
