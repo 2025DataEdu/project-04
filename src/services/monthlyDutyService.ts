@@ -48,48 +48,90 @@ export const assignMonthlyDuties = async (
       const dayOfWeek = currentDate.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
       const dateString = currentDate.toISOString().split('T')[0];
       
-      // 요일에 따른 당직 유형 결정
-      let dutyType: '평일야간' | '주말주간' | '주말야간';
-      
+      // 요일에 따른 당직 유형 및 배정 결정
       if (isWeekday(dayOfWeek)) {
-        // 월요일(1)~금요일(5): 평일야간
-        dutyType = '평일야간';
+        // 월요일(1)~금요일(5): 평일야간만 배정
+        const sortedWorkers = getSortedWorkersByAssignmentCount(workers, workerCounts);
+        const primaryWorker = sortedWorkers[0];
+        const backupWorker = sortedWorkers[1];
+        
+        const result = await createDutyAssignment(
+          dateString,
+          '평일야간',
+          primaryWorker.일련번호,
+          backupWorker.일련번호
+        );
+        
+        if (result.error) {
+          console.error('Error creating weekday duty assignment:', result.error);
+          throw new Error(`평일야간 당직 배정 생성 실패: ${result.error.message}`);
+        }
+        
+        if (result.data) {
+          const assignmentWithCorrectType: DutyAssignment = {
+            ...result.data,
+            duty_type: result.data.duty_type as '평일야간' | '주말주간' | '주말야간'
+          };
+          assignments.push(assignmentWithCorrectType);
+          workerCounts[primaryWorker.일련번호]++;
+          workerCounts[backupWorker.일련번호]++;
+        }
       } else {
-        // 토요일(6), 일요일(0): 주말주간
-        dutyType = '주말주간';
-      }
-      
-      // 가장 적게 배정된 근로자들을 우선 선택
-      const sortedWorkers = getSortedWorkersByAssignmentCount(workers, workerCounts);
-      
-      const primaryWorker = sortedWorkers[0];
-      const backupWorker = sortedWorkers[1];
-      
-      // 당직 배정 생성
-      const result = await createDutyAssignment(
-        dateString,
-        dutyType,
-        primaryWorker.일련번호,
-        backupWorker.일련번호
-      );
-      
-      if (result.error) {
-        console.error('Error creating duty assignment:', result.error);
-        throw new Error(`당직 배정 생성 실패: ${result.error.message}`);
-      }
-      
-      if (result.data) {
-        // 타입 단언을 사용하여 duty_type을 올바른 타입으로 변환
-        const assignmentWithCorrectType: DutyAssignment = {
-          ...result.data,
-          duty_type: result.data.duty_type as '평일야간' | '주말주간' | '주말야간'
-        };
+        // 토요일(6), 일요일(0): 주말주간과 주말야간 모두 배정
         
-        assignments.push(assignmentWithCorrectType);
+        // 1. 주말주간 배정
+        let sortedWorkers = getSortedWorkersByAssignmentCount(workers, workerCounts);
+        const dayPrimaryWorker = sortedWorkers[0];
+        const dayBackupWorker = sortedWorkers[1];
         
-        // 배정 횟수 업데이트
-        workerCounts[primaryWorker.일련번호]++;
-        workerCounts[backupWorker.일련번호]++;
+        const dayResult = await createDutyAssignment(
+          dateString,
+          '주말주간',
+          dayPrimaryWorker.일련번호,
+          dayBackupWorker.일련번호
+        );
+        
+        if (dayResult.error) {
+          console.error('Error creating weekend day duty assignment:', dayResult.error);
+          throw new Error(`주말주간 당직 배정 생성 실패: ${dayResult.error.message}`);
+        }
+        
+        if (dayResult.data) {
+          const dayAssignmentWithCorrectType: DutyAssignment = {
+            ...dayResult.data,
+            duty_type: dayResult.data.duty_type as '평일야간' | '주말주간' | '주말야간'
+          };
+          assignments.push(dayAssignmentWithCorrectType);
+          workerCounts[dayPrimaryWorker.일련번호]++;
+          workerCounts[dayBackupWorker.일련번호]++;
+        }
+        
+        // 2. 주말야간 배정 (다른 근로자들로)
+        sortedWorkers = getSortedWorkersByAssignmentCount(workers, workerCounts);
+        const nightPrimaryWorker = sortedWorkers[0];
+        const nightBackupWorker = sortedWorkers[1];
+        
+        const nightResult = await createDutyAssignment(
+          dateString,
+          '주말야간',
+          nightPrimaryWorker.일련번호,
+          nightBackupWorker.일련번호
+        );
+        
+        if (nightResult.error) {
+          console.error('Error creating weekend night duty assignment:', nightResult.error);
+          throw new Error(`주말야간 당직 배정 생성 실패: ${nightResult.error.message}`);
+        }
+        
+        if (nightResult.data) {
+          const nightAssignmentWithCorrectType: DutyAssignment = {
+            ...nightResult.data,
+            duty_type: nightResult.data.duty_type as '평일야간' | '주말주간' | '주말야간'
+          };
+          assignments.push(nightAssignmentWithCorrectType);
+          workerCounts[nightPrimaryWorker.일련번호]++;
+          workerCounts[nightBackupWorker.일련번호]++;
+        }
       }
     }
     
