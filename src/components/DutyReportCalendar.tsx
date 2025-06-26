@@ -29,6 +29,8 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
     return acc;
   }, {} as Record<string, DutyReportWithWorker[]>);
 
+  console.log('Reports grouped by date:', reportsGroupedByDate);
+
   const generateCalendarGrid = () => {
     const year = parseInt(selectedMonth.split('-')[0]);
     const month = parseInt(selectedMonth.split('-')[1]);
@@ -184,9 +186,6 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
           <span className="inline-flex items-center gap-1">
             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
             토요일
-          </span>
-          <span className="text-xs text-gray-500">
-            주말에는 주간(노란색)/야간(파란색) 당직자가 구분되어 표시됩니다
           </span>
         </div>
       </CardContent>

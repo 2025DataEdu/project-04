@@ -103,73 +103,83 @@ export const useDutyReports = () => {
     }
   };
 
-  const getDutyReportByDate = async (date: string): Promise<DutyReportWithWorker | null> => {
+  const getDutyReportsByDate = async (date: string): Promise<DutyReportWithWorker[]> => {
     try {
-      console.log('Getting duty report for date:', date);
+      console.log('Getting duty reports for date:', date);
       
-      const { data: reportData, error: reportError } = await supabase
+      // 해당 날짜의 모든 보고서를 조회 (single() 대신 여러 개 가능)
+      const { data: reportsData, error: reportsError } = await supabase
         .from('duty_reports')
         .select('*')
-        .eq('report_date', date)
-        .single();
+        .eq('report_date', date);
 
-      if (reportError || !reportData) {
-        console.log('No duty report found for date:', date);
-        return null;
+      if (reportsError) {
+        console.error('Error fetching duty reports:', reportsError);
+        return [];
       }
 
-      console.log('Found duty report:', reportData);
+      if (!reportsData || reportsData.length === 0) {
+        console.log('No duty reports found for date:', date);
+        return [];
+      }
 
-      // duty_worker_id로 근로자 정보 조회
-      const { data: worker } = await supabase
+      console.log(`Found ${reportsData.length} duty reports for date:`, date);
+
+      // 근로자 정보 조회
+      const { data: workers } = await supabase
         .from('worker_list')
-        .select('*')
-        .eq('일련번호', reportData.duty_worker_id)
-        .single();
+        .select('*');
 
-      // assignment_id로 정확한 당직 배정 정보 조회
-      const { data: assignment } = await supabase
+      // 당직 배정 정보 조회
+      const { data: assignments } = await supabase
         .from('duty_assignments')
         .select('*')
-        .eq('id', reportData.assignment_id)
-        .single();
+        .eq('assignment_date', date);
 
-      let assignmentInfo = undefined;
-      if (assignment) {
-        const { data: workers } = await supabase
-          .from('worker_list')
-          .select('*')
-          .in('일련번호', [assignment.primary_worker_id, assignment.backup_worker_id]);
+      // 각 보고서에 대해 근로자 정보와 배정 정보를 결합
+      const reportsWithWorker: DutyReportWithWorker[] = reportsData.map(report => {
+        const worker = workers?.find(w => w.일련번호 === report.duty_worker_id);
+        const assignment = assignments?.find(a => a.id === report.assignment_id);
 
-        const primaryWorker = workers?.find(w => w.일련번호 === assignment.primary_worker_id);
-        const backupWorker = workers?.find(w => w.일련번호 === assignment.backup_worker_id);
-        
-        assignmentInfo = {
-          duty_type: assignment.duty_type,
-          primary_worker_name: primaryWorker?.이름 || '알 수 없음',
-          backup_worker_name: backupWorker?.이름 || '알 수 없음'
+        let assignmentInfo = undefined;
+        if (assignment) {
+          const primaryWorker = workers?.find(w => w.일련번호 === assignment.primary_worker_id);
+          const backupWorker = workers?.find(w => w.일련번호 === assignment.backup_worker_id);
+          
+          assignmentInfo = {
+            duty_type: assignment.duty_type,
+            primary_worker_name: primaryWorker?.이름 || '알 수 없음',
+            backup_worker_name: backupWorker?.이름 || '알 수 없음'
+          };
+        }
+
+        return {
+          ...report,
+          worker_name: worker?.이름 || '알 수 없음',
+          worker_department: worker?.소속부서 || '알 수 없음',
+          assignment: assignmentInfo
         };
-      }
+      });
 
-      const result = {
-        ...reportData,
-        worker_name: worker?.이름 || '알 수 없음',
-        worker_department: worker?.소속부서 || '알 수 없음',
-        assignment: assignmentInfo
-      };
-
-      console.log('Final report with worker info:', result);
-      return result;
+      console.log('Final reports with worker info:', reportsWithWorker);
+      return reportsWithWorker;
     } catch (error) {
-      console.error('Error fetching duty report by date:', error);
-      return null;
+      console.error('Error fetching duty reports by date:', error);
+      return [];
     }
+  };
+
+  // 하위 호환성을 위해 기존 함수명도 유지
+  const getDutyReportByDate = async (date: string): Promise<DutyReportWithWorker | null> => {
+    const reports = await getDutyReportsByDate(date);
+    return reports.length > 0 ? reports[0] : null;
   };
 
   return {
     isLoading,
     reports,
     fetchDutyReports,
-    getDutyReportByDate
+    getDutyReportByDate,
+    getDutyReportsByDate // 새로운 함수 추가
   };
 };
