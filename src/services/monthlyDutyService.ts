@@ -72,7 +72,13 @@ export const assignMonthlyDuties = async (
       }
       
       if (result.data) {
-        assignments.push(result.data);
+        // 타입 단언을 사용하여 duty_type을 올바른 타입으로 변환
+        const assignmentWithCorrectType: DutyAssignment = {
+          ...result.data,
+          duty_type: result.data.duty_type as '평일야간' | '주말주간' | '주말야간'
+        };
+        
+        assignments.push(assignmentWithCorrectType);
         
         // 배정 횟수 업데이트
         workerCounts[primaryWorker.일련번호]++;
