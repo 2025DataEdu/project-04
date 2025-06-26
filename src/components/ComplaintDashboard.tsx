@@ -28,6 +28,34 @@ const ComplaintDashboard = () => {
 
   return (
     <div className="space-y-6">
+      {/* 주요 민원 카테고리 - 맨 위로 이동 */}
+      {categoryData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-orange-600" />
+              주요 민원 카테고리
+            </CardTitle>
+            <CardDescription>자주 발생하는 민원 유형</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {categoryData
+                .sort((a, b) => b.value - a.value)
+                .slice(0, 5)
+                .map((category, index) => (
+                  <Badge
+                    key={category.name}
+                    variant={index === 0 ? "destructive" : index === 1 ? "default" : "secondary"}
+                  >
+                    {category.name} ({category.value}건)
+                  </Badge>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 요약 카드 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
@@ -74,34 +102,6 @@ const ComplaintDashboard = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* 우선순위 알림 - 차트들 위로 이동 */}
-      {categoryData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-orange-600" />
-              주요 민원 카테고리
-            </CardTitle>
-            <CardDescription>자주 발생하는 민원 유형</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {categoryData
-                .sort((a, b) => b.value - a.value)
-                .slice(0, 5)
-                .map((category, index) => (
-                  <Badge
-                    key={category.name}
-                    variant={index === 0 ? "destructive" : index === 1 ? "default" : "secondary"}
-                  >
-                    {category.name} ({category.value}건)
-                  </Badge>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* 차트 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -172,7 +172,7 @@ const ComplaintDashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
-      </Card>
+      </div>
     </div>
   );
 };
