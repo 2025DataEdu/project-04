@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,12 +15,13 @@ const DutyCalendar = () => {
   const loadAssignments = async (year: number, month: number) => {
     // 월의 첫째 날과 마지막 날을 정확히 계산
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    // 마지막 날을 정확히 구하기 위해 다음 달 0일을 사용
+    // 마지막 날을 정확히 구하기 위해 다음 달 0일을 사용하여 정확한 마지막 날 계산
     const lastDayOfMonth = new Date(year, month, 0).getDate();
     const endDate = new Date(year, month - 1, lastDayOfMonth).toISOString().split('T')[0];
     
     console.log(`Loading assignments for ${year}-${month}: ${startDate} to ${endDate}`);
     console.log(`Last day of month: ${lastDayOfMonth}`);
+    console.log(`Calculated endDate: ${endDate}`);
     
     try {
       const data = await getDutyAssignments(startDate, endDate);
