@@ -44,7 +44,8 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
     const daysInMonth = lastDay.getDate();
     
     // 첫째 날의 요일 (0=일요일, 1=월요일, ...)
-    const startDayOfWeek = firstDay.getDay();
+    // 월요일을 첫날로 하기 위해 조정 (일요일=6, 월요일=0)
+    const startDayOfWeek = (firstDay.getDay() + 6) % 7;
     
     // 달력 그리드를 위한 배열 생성
     const calendarDays = [];
@@ -64,7 +65,8 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
   };
 
   const calendarDays = generateCalendarGrid();
-  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
+  // 월요일부터 시작하는 요일 배열
+  const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
 
   return (
     <Card>
@@ -79,7 +81,7 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
             <div 
               key={day} 
               className={`text-center font-semibold py-2 text-sm ${
-                index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-700'
+                index === 5 ? 'text-blue-600' : index === 6 ? 'text-red-600' : 'text-gray-700'
               }`}
             >
               {day}
@@ -91,7 +93,7 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
         <div className="grid grid-cols-7 gap-2">
           {calendarDays.map((date, index) => {
             if (!date) {
-              return <div key={`empty-${index}`} className="h-20"></div>;
+              return <div key={`empty-${index}`} className="h-24"></div>;
             }
             
             const dayReports = reportsGroupedByDate[date] || [];
@@ -105,7 +107,7 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
                 key={date}
                 variant={isSelected ? "default" : hasReports ? "outline" : "ghost"}
                 size="sm"
-                className={`h-20 flex flex-col p-1 ${
+                className={`h-24 flex flex-col p-2 ${
                   hasReports 
                     ? 'border-green-300 bg-green-50 hover:bg-green-100' 
                     : isWeekend 
@@ -114,8 +116,8 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
                 } ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
                 onClick={() => onDateSelect(date)}
               >
-                <div className="flex flex-col items-center w-full">
-                  <span className={`text-xs mb-1 font-semibold ${
+                <div className="flex flex-col items-center w-full h-full">
+                  <span className={`text-sm font-bold mb-1 ${
                     dayOfWeek === 0 ? 'text-red-600' : 
                     dayOfWeek === 6 ? 'text-blue-600' : 
                     'text-gray-700'
@@ -123,22 +125,46 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
                     {new Date(date).getDate()}
                   </span>
                   {hasReports && (
-                    <div className="flex flex-col items-center w-full space-y-0.5">
-                      {dayReports.map((report, reportIndex) => (
-                        <div key={report.id} className="text-center w-full">
-                          <span className="text-xs text-green-600">●</span>
-                          <div className="text-xs text-green-600 truncate w-full">
-                            {report.worker_name}
+                    <div className="flex flex-col items-center w-full space-y-1 flex-1">
+                      {dayReports.length === 1 ? (
+                        // 평일 또는 단일 보고서 (깔끔하게 표시)
+                        <div className="text-center w-full">
+                          <div className="bg-green-100 rounded-full px-2 py-1">
+                            <div className="text-xs font-medium text-green-800 truncate">
+                              {dayReports[0].worker_name}
+                            </div>
                           </div>
-                          {report.assignment?.duty_type && (
-                            <div className="text-xs text-gray-500 truncate w-full">
-                              {report.assignment.duty_type === '주말주간' ? '주간' : 
-                               report.assignment.duty_type === '주말야간' ? '야간' : 
-                               report.assignment.duty_type === '평일야간' ? '야간' : '당직'}
+                          {dayReports[0].assignment?.duty_type && (
+                            <div className="text-xs text-gray-500 mt-1">
+                              {dayReports[0].assignment.duty_type === '평일야간' ? '야간' : '당직'}
                             </div>
                           )}
                         </div>
-                      ))}
+                      ) : (
+                        // 주말 보고서 (2개, 주간/야간으로 구분하여 표시)
+                        <div className="flex flex-col space-y-1 w-full">
+                          {dayReports.map((report, reportIndex) => (
+                            <div key={report.id} className="text-center w-full">
+                              <div className={`rounded-full px-2 py-0.5 ${
+                                report.assignment?.duty_type === '주말주간' 
+                                  ? 'bg-yellow-100' 
+                                  : 'bg-blue-100'
+                              }`}>
+                                <div className={`text-xs font-medium truncate ${
+                                  report.assignment?.duty_type === '주말주간' 
+                                    ? 'text-yellow-800' 
+                                    : 'text-blue-800'
+                                }`}>
+                                  {report.worker_name}
+                                </div>
+                              </div>
+                              <div className="text-xs text-gray-500 mt-0.5">
+                                {report.assignment?.duty_type === '주말주간' ? '주간' : '야간'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -153,15 +179,15 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
             보고서 작성 완료
           </span>
           <span className="inline-flex items-center gap-1">
-            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-            일요일
-          </span>
-          <span className="inline-flex items-center gap-1">
             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
             토요일
           </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+            일요일
+          </span>
           <span className="text-xs text-gray-500">
-            주말에는 주간/야간 당직자가 각각 표시됩니다
+            주말에는 주간(노란색)/야간(파란색) 당직자가 구분되어 표시됩니다
           </span>
         </div>
       </CardContent>
