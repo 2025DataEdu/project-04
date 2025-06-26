@@ -18,8 +18,10 @@ export const assignMonthlyDuties = async (
   try {
     // 정확한 월의 첫날과 마지막날 계산 (month는 1-12, JavaScript Date는 0-11을 사용)
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+    const endDate = new Date(year, month - 1 + 1, 0).toISOString().split('T')[0]; // 수정된 부분
     
+    console.log(`Processing ${year}년 ${month}월 assignments`);
+    console.log(`Date range: ${startDate} to ${endDate}`);
     console.log(`Deleting existing assignments for ${startDate} to ${endDate}`);
     
     // CASCADE DELETE가 설정되어 있으므로 당직 배정만 삭제하면 됨
@@ -37,7 +39,9 @@ export const assignMonthlyDuties = async (
     console.log('Successfully deleted existing assignments and related reports');
 
     // 해당 월의 모든 날짜 생성 (정확한 월의 일수 계산)
-    const daysInMonth = new Date(year, month, 0).getDate(); // new Date(2025, 6, 0) = 2025년 6월 30일
+    const daysInMonth = new Date(year, month - 1 + 1, 0).getDate(); // 수정된 부분
+    console.log(`Days in ${year}년 ${month}월: ${daysInMonth}`);
+    
     const assignments: DutyAssignment[] = [];
     
     // 근로자별 배정 횟수 추적
@@ -49,12 +53,16 @@ export const assignMonthlyDuties = async (
       const dayOfWeek = currentDate.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
       const dateString = currentDate.toISOString().split('T')[0];
       
+      console.log(`Processing day ${day}: ${dateString}, dayOfWeek: ${dayOfWeek}`);
+      
       // 요일에 따른 당직 유형 및 배정 결정
       if (isWeekday(dayOfWeek)) {
         // 월요일(1)~금요일(5): 평일야간만 배정
         const sortedWorkers = getSortedWorkersByAssignmentCount(workers, workerCounts);
         const primaryWorker = sortedWorkers[0];
         const backupWorker = sortedWorkers[1];
+        
+        console.log(`평일야간 배정 - Primary: ${primaryWorker.이름}, Backup: ${backupWorker.이름}`);
         
         const result = await createDutyAssignment(
           dateString,
@@ -79,11 +87,14 @@ export const assignMonthlyDuties = async (
         }
       } else {
         // 토요일(6), 일요일(0): 주말주간과 주말야간 모두 배정
+        console.log(`주말 배정 처리 중...`);
         
         // 1. 주말주간 배정
         let sortedWorkers = getSortedWorkersByAssignmentCount(workers, workerCounts);
         const dayPrimaryWorker = sortedWorkers[0];
         const dayBackupWorker = sortedWorkers[1];
+        
+        console.log(`주말주간 배정 - Primary: ${dayPrimaryWorker.이름}, Backup: ${dayBackupWorker.이름}`);
         
         const dayResult = await createDutyAssignment(
           dateString,
@@ -112,6 +123,8 @@ export const assignMonthlyDuties = async (
         const nightPrimaryWorker = sortedWorkers[0];
         const nightBackupWorker = sortedWorkers[1];
         
+        console.log(`주말야간 배정 - Primary: ${nightPrimaryWorker.이름}, Backup: ${nightBackupWorker.이름}`);
+        
         const nightResult = await createDutyAssignment(
           dateString,
           '주말야간',
@@ -136,7 +149,8 @@ export const assignMonthlyDuties = async (
       }
     }
     
-    console.log(`Successfully created ${assignments.length} assignments for ${year}-${month.toString().padStart(2, '0')}`);
+    console.log(`Successfully created ${assignments.length} assignments for ${year}년 ${month}월`);
+    console.log('Final worker assignment counts:', workerCounts);
     return assignments;
   } catch (error) {
     console.error('Monthly duty assignment error:', error);
