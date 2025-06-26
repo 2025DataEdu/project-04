@@ -29,11 +29,6 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
     return acc;
   }, {} as Record<string, DutyReportWithWorker[]>);
 
-  const getDayOfWeek = (date: string) => {
-    const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-    return dayNames[new Date(date).getDay()];
-  };
-
   const generateCalendarGrid = () => {
     const year = parseInt(selectedMonth.split('-')[0]);
     const month = parseInt(selectedMonth.split('-')[1]);
@@ -43,14 +38,13 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
     const lastDay = new Date(year, month, 0);
     const daysInMonth = lastDay.getDate();
     
-    // 첫째 날의 요일 (0=일요일, 1=월요일, ...)
-    // 월요일을 첫날로 하기 위해 조정 (일요일=6, 월요일=0)
-    const startDayOfWeek = (firstDay.getDay() + 6) % 7;
+    // 첫째 날의 요일 (0=일요일, 1=월요일, ..., 6=토요일)
+    const startDayOfWeek = firstDay.getDay();
     
     // 달력 그리드를 위한 배열 생성
     const calendarDays = [];
     
-    // 이전 달의 빈 칸들
+    // 이전 달의 빈 칸들 (일요일부터 시작)
     for (let i = 0; i < startDayOfWeek; i++) {
       calendarDays.push(null);
     }
@@ -65,8 +59,8 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
   };
 
   const calendarDays = generateCalendarGrid();
-  // 월요일부터 시작하는 요일 배열
-  const weekDays = ['월', '화', '수', '목', '금', '토', '일'];
+  // 일요일부터 시작하는 요일 배열
+  const weekDays = ['일', '월', '화', '수', '목', '금', '토'];
 
   return (
     <Card>
@@ -81,7 +75,7 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
             <div 
               key={day} 
               className={`text-center font-semibold py-2 text-sm ${
-                index === 5 ? 'text-blue-600' : index === 6 ? 'text-red-600' : 'text-gray-700'
+                index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-700'
               }`}
             >
               {day}
@@ -127,7 +121,7 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
                   {hasReports && (
                     <div className="flex flex-col items-center w-full space-y-1 flex-1">
                       {dayReports.length === 1 ? (
-                        // 평일 또는 단일 보고서 (깔끔하게 표시)
+                        // 평일 또는 단일 보고서
                         <div className="text-center w-full">
                           <div className="bg-green-100 rounded-full px-2 py-1">
                             <div className="text-xs font-medium text-green-800 truncate">
@@ -143,7 +137,14 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
                       ) : (
                         // 주말 보고서 (2개, 주간/야간으로 구분하여 표시)
                         <div className="flex flex-col space-y-1 w-full">
-                          {dayReports.map((report, reportIndex) => (
+                          {dayReports
+                            .sort((a, b) => {
+                              // 주간을 먼저, 야간을 나중에 정렬
+                              if (a.assignment?.duty_type === '주말주간') return -1;
+                              if (b.assignment?.duty_type === '주말주간') return 1;
+                              return 0;
+                            })
+                            .map((report) => (
                             <div key={report.id} className="text-center w-full">
                               <div className={`rounded-full px-2 py-0.5 ${
                                 report.assignment?.duty_type === '주말주간' 
@@ -179,12 +180,12 @@ export const DutyReportCalendar: React.FC<DutyReportCalendarProps> = ({
             보고서 작성 완료
           </span>
           <span className="inline-flex items-center gap-1">
-            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-            토요일
-          </span>
-          <span className="inline-flex items-center gap-1">
             <span className="w-2 h-2 bg-red-500 rounded-full"></span>
             일요일
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+            토요일
           </span>
           <span className="text-xs text-gray-500">
             주말에는 주간(노란색)/야간(파란색) 당직자가 구분되어 표시됩니다
