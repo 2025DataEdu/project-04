@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +28,11 @@ const DutyCalendar = () => {
       if (Array.isArray(data)) {
         console.log(`Loaded ${data.length} assignments for ${year}-${month}`);
         console.log('Assignment dates:', data.map(d => d.assignment_date));
+        
+        // 6월 30일 데이터 특별 확인
+        const june30Data = data.filter(d => d.assignment_date === '2025-06-30');
+        console.log('June 30 data specifically:', june30Data);
+        
         setAssignments(data);
       } else {
         setAssignments([]);

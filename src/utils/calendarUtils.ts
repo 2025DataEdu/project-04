@@ -19,6 +19,10 @@ export const getDaysInMonth = (date: Date) => {
     days.push(new Date(year, month, day));
   }
   
+  console.log(`Calendar days generated for ${year}-${month + 1}: ${daysInMonth} days`);
+  console.log('Days array length:', days.length);
+  console.log('Last day in array:', days[days.length - 1]);
+  
   return days;
 };
 
@@ -29,7 +33,20 @@ export const getAssignmentsForDate = (date: Date, assignments: any[]) => {
   const day = date.getDate().toString().padStart(2, '0');
   const dateString = `${year}-${month}-${day}`;
   
-  const dateAssignments = assignments.filter(assignment => assignment.assignment_date === dateString);
+  const dateAssignments = assignments.filter(assignment => {
+    const assignmentDate = assignment.assignment_date;
+    const match = assignmentDate === dateString;
+    if (day === '30') {
+      console.log(`Checking day 30: ${dateString} vs ${assignmentDate}, match: ${match}`);
+    }
+    return match;
+  });
+  
+  if (day === '30') {
+    console.log(`Day 30 (${dateString}) assignments:`, dateAssignments);
+    console.log('All assignments:', assignments.map(a => a.assignment_date));
+  }
+  
   console.log(`Calendar date: ${dateString}, Reports found: ${dateAssignments.length}, Day: ${date.getDate()}`);
   
   return dateAssignments;
