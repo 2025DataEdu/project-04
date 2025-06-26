@@ -17,42 +17,42 @@ const Index = () => {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="container mx-auto px-4 py-8">
-          <PageHeader />
+      <div className="min-h-screen bg-gray-50">
+        <PageHeader />
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabNavigation />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabNavigation />
 
-            <TabsContent value="assignment">
+          <div className="container mx-auto px-4 py-6">
+            <TabsContent value="assignment" className="mt-0">
               <DutyAssignment />
             </TabsContent>
 
-            <TabsContent value="analysis">
+            <TabsContent value="analysis" className="mt-0">
               <WorkAnalysisTab />
             </TabsContent>
 
-            <TabsContent value="handover">
+            <TabsContent value="handover" className="mt-0">
               <HandoverDashboard />
             </TabsContent>
 
-            <TabsContent value="penalty">
+            <TabsContent value="penalty" className="mt-0">
               <PenaltyDutyManagement />
             </TabsContent>
 
-            <TabsContent value="complaint-dashboard">
+            <TabsContent value="complaint-dashboard" className="mt-0">
               <ComplaintDashboard />
             </TabsContent>
 
-            <TabsContent value="complaint-management">
+            <TabsContent value="complaint-management" className="mt-0">
               <ComplaintManagement />
             </TabsContent>
 
-            <TabsContent value="report">
+            <TabsContent value="report" className="mt-0">
               <DutyReport />
             </TabsContent>
-          </Tabs>
-        </div>
+          </div>
+        </Tabs>
       </div>
     </TooltipProvider>
   );
