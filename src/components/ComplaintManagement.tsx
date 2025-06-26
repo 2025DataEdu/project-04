@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useComplaints } from '@/hooks/useComplaints';
-import { Plus, Search, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plus, Search, AlertTriangle, CheckCircle, MessageSquareMore } from "lucide-react";
 import { toast } from 'sonner';
 
 const ComplaintManagement = () => {
@@ -113,105 +114,112 @@ const ComplaintManagement = () => {
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">민원 관리</h2>
-          <p className="text-muted-foreground">민원 접수, 처리 및 해결방법 관리</p>
-        </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              민원 등록
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>새 민원 등록</DialogTitle>
-              <DialogDescription>
-                민원 정보를 입력하면 자동으로 해결방법을 추천해드립니다.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="title">제목 *</Label>
-                  <Input
-                    id="title"
-                    value={newComplaint.title}
-                    onChange={(e) => setNewComplaint(prev => ({...prev, title: e.target.value}))}
-                    placeholder="민원 제목을 입력하세요"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="category">카테고리</Label>
-                  <Select value={newComplaint.category} onValueChange={(value) => setNewComplaint(prev => ({...prev, category: value}))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="카테고리 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="시설관리">시설관리</SelectItem>
-                      <SelectItem value="소음">소음</SelectItem>
-                      <SelectItem value="청소">청소</SelectItem>
-                      <SelectItem value="주차">주차</SelectItem>
-                      <SelectItem value="기타">기타</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="complainant_name">신청인 *</Label>
-                  <Input
-                    id="complainant_name"
-                    value={newComplaint.complainant_name}
-                    onChange={(e) => setNewComplaint(prev => ({...prev, complainant_name: e.target.value}))}
-                    placeholder="신청인 이름"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="complainant_contact">연락처</Label>
-                  <Input
-                    id="complainant_contact"
-                    value={newComplaint.complainant_contact}
-                    onChange={(e) => setNewComplaint(prev => ({...prev, complainant_contact: e.target.value}))}
-                    placeholder="연락처"
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="priority">우선순위</Label>
-                <Select value={newComplaint.priority} onValueChange={(value) => setNewComplaint(prev => ({...prev, priority: value}))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="일반">일반</SelectItem>
-                    <SelectItem value="높음">높음</SelectItem>
-                    <SelectItem value="긴급">긴급</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="content">내용 *</Label>
-                <Textarea
-                  id="content"
-                  value={newComplaint.content}
-                  onChange={(e) => setNewComplaint(prev => ({...prev, content: e.target.value}))}
-                  placeholder="민원 내용을 상세히 입력하세요"
-                  rows={4}
-                />
-              </div>
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+        <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-lg">
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageSquareMore className="h-5 w-5" />
+              민원 관리
             </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                취소
-              </Button>
-              <Button onClick={handleCreateComplaint}>등록</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-white/20 hover:bg-white/30 text-white border-white/30">
+                  <Plus className="h-4 w-4 mr-2" />
+                  민원 등록
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>새 민원 등록</DialogTitle>
+                  <DialogDescription>
+                    민원 정보를 입력하면 자동으로 해결방법을 추천해드립니다.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="title">제목 *</Label>
+                      <Input
+                        id="title"
+                        value={newComplaint.title}
+                        onChange={(e) => setNewComplaint(prev => ({...prev, title: e.target.value}))}
+                        placeholder="민원 제목을 입력하세요"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="category">카테고리</Label>
+                      <Select value={newComplaint.category} onValueChange={(value) => setNewComplaint(prev => ({...prev, category: value}))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="카테고리 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="시설관리">시설관리</SelectItem>
+                          <SelectItem value="소음">소음</SelectItem>
+                          <SelectItem value="청소">청소</SelectItem>
+                          <SelectItem value="주차">주차</SelectItem>
+                          <SelectItem value="기타">기타</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="complainant_name">신청인 *</Label>
+                      <Input
+                        id="complainant_name"
+                        value={newComplaint.complainant_name}
+                        onChange={(e) => setNewComplaint(prev => ({...prev, complainant_name: e.target.value}))}
+                        placeholder="신청인 이름"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="complainant_contact">연락처</Label>
+                      <Input
+                        id="complainant_contact"
+                        value={newComplaint.complainant_contact}
+                        onChange={(e) => setNewComplaint(prev => ({...prev, complainant_contact: e.target.value}))}
+                        placeholder="연락처"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="priority">우선순위</Label>
+                    <Select value={newComplaint.priority} onValueChange={(value) => setNewComplaint(prev => ({...prev, priority: value}))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="일반">일반</SelectItem>
+                        <SelectItem value="높음">높음</SelectItem>
+                        <SelectItem value="긴급">긴급</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="content">내용 *</Label>
+                    <Textarea
+                      id="content"
+                      value={newComplaint.content}
+                      onChange={(e) => setNewComplaint(prev => ({...prev, content: e.target.value}))}
+                      placeholder="민원 내용을 상세히 입력하세요"
+                      rows={4}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                    취소
+                  </Button>
+                  <Button onClick={handleCreateComplaint}>등록</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardTitle>
+          <CardDescription className="text-orange-100">
+            민원 접수, 처리 및 해결방법 관리
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
       {/* 검색 및 필터 */}
       <Card>
