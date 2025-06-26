@@ -4,6 +4,7 @@ import { DutyAssignmentWithWorkers } from '@/types/duty';
 import { toast } from 'sonner';
 import { useWorkers } from './useWorkers';
 import { assignMonthlyDuties as performMonthlyAssignment } from '@/services/monthlyDutyService';
+import { createDutyReportsForAssignments } from '@/services/dutyReportService';
 import { fetchDutyAssignments } from '@/services/dutyAssignmentService';
 
 export const useDutyAssignment = () => {
@@ -14,9 +15,17 @@ export const useDutyAssignment = () => {
     setIsLoading(true);
     try {
       const workers = await getAvailableWorkers();
+      
+      // 당직 배정 수행
       const assignments = await performMonthlyAssignment(year, month, workers);
       
-      toast.success(`${year}년 ${month}월 당직이 성공적으로 배정되었습니다. (총 ${assignments.length}건)`);
+      // 당직 보고서 자동 생성
+      await createDutyReportsForAssignments(assignments);
+      
+      toast.success(
+        `${year}년 ${month}월 당직이 성공적으로 배정되었습니다. (총 ${assignments.length}건)\n` +
+        '당직 보고서도 함께 생성되었습니다.'
+      );
       return assignments;
     } catch (error) {
       console.error('Error in assignMonthlyDuties:', error);
