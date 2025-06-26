@@ -17,14 +17,15 @@ export const assignMonthlyDuties = async (
 ): Promise<DutyAssignment[]> => {
   try {
     // 정확한 월의 첫날과 마지막날 계산
-    // JavaScript Date는 0-based month를 사용하므로 month - 1을 사용
-    const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    // 해당 월의 마지막 날을 구하기 위해서는 다음 달의 0일을 사용
-    const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+    const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+    
+    // 해당 월의 마지막 날 계산 (1-based month 사용)
+    const lastDayOfMonth = new Date(year, month, 0).getDate();
+    const endDate = `${year}-${month.toString().padStart(2, '0')}-${lastDayOfMonth.toString().padStart(2, '0')}`;
     
     console.log(`Processing ${year}년 ${month}월 assignments`);
     console.log(`Date range: ${startDate} to ${endDate}`);
-    console.log(`Deleting existing assignments for ${startDate} to ${endDate}`);
+    console.log(`Days in month: ${lastDayOfMonth}`);
     
     // CASCADE DELETE가 설정되어 있으므로 당직 배정만 삭제하면 됨
     const { error: deleteError } = await supabase
@@ -39,21 +40,19 @@ export const assignMonthlyDuties = async (
     }
 
     console.log('Successfully deleted existing assignments and related reports');
-
-    // 해당 월의 일수 계산 - JavaScript Date의 0-based month 특성 활용
-    const daysInMonth = new Date(year, month, 0).getDate();
-    console.log(`Days in ${year}년 ${month}월: ${daysInMonth}`);
     
     const assignments: DutyAssignment[] = [];
     
     // 근로자별 배정 횟수 추적
     const workerCounts = initializeWorkerCounts(workers);
     
-    for (let day = 1; day <= daysInMonth; day++) {
-      // 정확한 날짜 생성 - JavaScript의 0-based month 사용
-      const currentDate = new Date(year, month - 1, day);
-      const dayOfWeek = currentDate.getDay(); // 0: 일요일, 1: 월요일, ..., 6: 토요일
-      const dateString = currentDate.toISOString().split('T')[0];
+    for (let day = 1; day <= lastDayOfMonth; day++) {
+      // 정확한 날짜 문자열 생성
+      const dateString = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+      
+      // 해당 날짜의 요일 구하기 (0: 일요일, 1: 월요일, ..., 6: 토요일)
+      const currentDate = new Date(year, month - 1, day); // JavaScript Date는 0-based month
+      const dayOfWeek = currentDate.getDay();
       
       console.log(`Processing day ${day}: ${dateString}, dayOfWeek: ${dayOfWeek}`);
       
