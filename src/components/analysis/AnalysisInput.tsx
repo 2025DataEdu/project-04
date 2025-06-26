@@ -3,7 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { FileText, HelpCircle } from "lucide-react";
 
 interface AnalysisInputProps {
   inputContent: string;
@@ -26,6 +27,20 @@ const AnalysisInput: React.FC<AnalysisInputProps> = ({
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
           업무 내용 입력
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 ml-2 cursor-help opacity-80 hover:opacity-100 transition-opacity" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs bg-white text-gray-900 border shadow-lg p-3">
+                <div className="space-y-1 text-sm">
+                  <p>○○과장님 지시에 따라 주요 산불 취약지역에 대한 순찰 강화 요청받음.</p>
+                  <p>18시부터 19시 순찰 실시, 이상 무 확인함.</p>
+                  <p>인계사항으로는 야간 기상 악화 예보에 따라 긴급 상황 대비 필요.</p>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
         <CardDescription className="text-blue-100">
           지시사항, 순찰, 인수인계 등의 내용을 입력해주세요

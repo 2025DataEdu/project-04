@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      applications: {
+        Row: {
+          application_reason: string
+          applied_at: string
+          id: string
+          post_id: string
+          reviewed_at: string | null
+          selection_status: string | null
+          user_id: string
+        }
+        Insert: {
+          application_reason: string
+          applied_at?: string
+          id?: string
+          post_id: string
+          reviewed_at?: string | null
+          selection_status?: string | null
+          user_id: string
+        }
+        Update: {
+          application_reason?: string
+          applied_at?: string
+          id?: string
+          post_id?: string
+          reviewed_at?: string | null
+          selection_status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "experience_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       complaint_solutions: {
         Row: {
           category: string
@@ -222,6 +260,62 @@ export type Database = {
           },
         ]
       }
+      experience_posts: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          max_participants: number | null
+          mission_content: string
+          recruit_end_date: string
+          recruit_start_date: string
+          requirements: string
+          reward: string | null
+          status: string | null
+          store_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          max_participants?: number | null
+          mission_content: string
+          recruit_end_date: string
+          recruit_start_date: string
+          requirements: string
+          reward?: string | null
+          status?: string | null
+          store_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          max_participants?: number | null
+          mission_content?: string
+          recruit_end_date?: string
+          recruit_start_date?: string
+          requirements?: string
+          reward?: string | null
+          status?: string | null
+          store_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experience_posts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fire_safety_faqs: {
         Row: {
           answer: string
@@ -380,6 +474,99 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          bio: string | null
+          created_at: string
+          id: string
+          interest_categories: string[] | null
+          nickname: string
+          profile_image: string | null
+          sns_instagram: string | null
+          sns_tiktok: string | null
+          sns_youtube: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          interest_categories?: string[] | null
+          nickname: string
+          profile_image?: string | null
+          sns_instagram?: string | null
+          sns_tiktok?: string | null
+          sns_youtube?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string
+          id?: string
+          interest_categories?: string[] | null
+          nickname?: string
+          profile_image?: string | null
+          sns_instagram?: string | null
+          sns_tiktok?: string | null
+          sns_youtube?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          application_id: string | null
+          content: string
+          created_at: string
+          id: string
+          images: string[] | null
+          rating: number
+          store_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          rating: number
+          store_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          rating?: number
+          store_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sales: {
         Row: {
           created_at: string
@@ -427,6 +614,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stores: {
+        Row: {
+          address: string
+          category: string
+          contact_email: string | null
+          contact_phone: string
+          created_at: string
+          description: string | null
+          id: string
+          images: string[] | null
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          category: string
+          contact_email?: string | null
+          contact_phone: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          category?: string
+          contact_email?: string | null
+          contact_phone?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          images?: string[] | null
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_inquiries: {
         Row: {
