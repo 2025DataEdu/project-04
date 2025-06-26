@@ -18,7 +18,7 @@ export const assignMonthlyDuties = async (
   try {
     // 정확한 월의 첫날과 마지막날 계산 (month는 1-12, JavaScript Date는 0-11을 사용)
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
-    const endDate = new Date(year, month - 1 + 1, 0).toISOString().split('T')[0]; // 수정된 부분
+    const endDate = new Date(year, month, 0).toISOString().split('T')[0]; // month를 그대로 사용하여 해당 월의 마지막 날
     
     console.log(`Processing ${year}년 ${month}월 assignments`);
     console.log(`Date range: ${startDate} to ${endDate}`);
@@ -39,7 +39,7 @@ export const assignMonthlyDuties = async (
     console.log('Successfully deleted existing assignments and related reports');
 
     // 해당 월의 모든 날짜 생성 (정확한 월의 일수 계산)
-    const daysInMonth = new Date(year, month - 1 + 1, 0).getDate(); // 수정된 부분
+    const daysInMonth = new Date(year, month, 0).getDate(); // month를 그대로 사용하여 해당 월의 일수 계산
     console.log(`Days in ${year}년 ${month}월: ${daysInMonth}`);
     
     const assignments: DutyAssignment[] = [];
