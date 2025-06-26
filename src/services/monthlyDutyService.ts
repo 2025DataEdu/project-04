@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Worker, DutyAssignment } from '@/types/duty';
 import { 
@@ -15,55 +16,13 @@ export const assignMonthlyDuties = async (
   workers: Worker[]
 ): Promise<DutyAssignment[]> => {
   try {
-    // 기존 배정 데이터 삭제 (외래 키 제약조건 때문에 순서 중요)
+    // 기존 배정 데이터 삭제 (CASCADE DELETE로 연결된 보고서도 자동 삭제)
     const startDate = new Date(year, month - 1, 1).toISOString().split('T')[0];
     const endDate = new Date(year, month, 0).toISOString().split('T')[0];
     
     console.log(`Deleting existing assignments for ${startDate} to ${endDate}`);
     
-    // 1단계: 해당 기간의 모든 당직 보고서 삭제 (날짜 기반)
-    console.log('Deleting all duty reports in date range');
-    const { error: deleteAllReportsError } = await supabase
-      .from('duty_reports')
-      .delete()
-      .gte('report_date', startDate)
-      .lte('report_date', endDate);
-
-    if (deleteAllReportsError) {
-      console.error('Error deleting all duty reports:', deleteAllReportsError);
-      throw new Error(`기존 당직 보고서 삭제 실패: ${deleteAllReportsError.message}`);
-    }
-
-    // 2단계: 해당 기간의 당직 배정 ID들을 조회
-    const { data: existingAssignments, error: fetchError } = await supabase
-      .from('duty_assignments')
-      .select('id')
-      .gte('assignment_date', startDate)
-      .lte('assignment_date', endDate);
-
-    if (fetchError) {
-      console.error('Error fetching existing assignments:', fetchError);
-      throw new Error(`기존 배정 조회 실패: ${fetchError.message}`);
-    }
-
-    // 3단계: 혹시 남아있는 연결된 당직 보고서들 삭제 (assignment_id 기반)
-    if (existingAssignments && existingAssignments.length > 0) {
-      const assignmentIds = existingAssignments.map(a => a.id);
-      console.log(`Deleting any remaining duty reports for ${assignmentIds.length} assignments`);
-      
-      const { error: deleteLinkedReportsError } = await supabase
-        .from('duty_reports')
-        .delete()
-        .in('assignment_id', assignmentIds);
-
-      if (deleteLinkedReportsError) {
-        console.error('Error deleting linked duty reports:', deleteLinkedReportsError);
-        // 이미 1단계에서 날짜 기반으로 삭제했으므로 여기서는 경고만 출력
-        console.warn('Some linked reports may still exist, but continuing...');
-      }
-    }
-
-    // 4단계: 당직 배정 삭제
+    // CASCADE DELETE가 설정되어 있으므로 당직 배정만 삭제하면 됨
     const { error: deleteError } = await supabase
       .from('duty_assignments')
       .delete()
@@ -75,7 +34,7 @@ export const assignMonthlyDuties = async (
       throw new Error(`기존 배정 삭제 실패: ${deleteError.message}`);
     }
 
-    console.log('Successfully deleted existing assignments and reports');
+    console.log('Successfully deleted existing assignments and related reports');
 
     // 해당 월의 모든 날짜 생성
     const daysInMonth = new Date(year, month, 0).getDate();
