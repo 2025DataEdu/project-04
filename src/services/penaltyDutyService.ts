@@ -63,5 +63,45 @@ export const penaltyDutyService = {
     }
 
     return true;
+  },
+
+  async getDutyWorkerByDate(date: string) {
+    try {
+      // 해당 날짜의 당직 배정 정보를 가져옵니다
+      const { data: assignments, error: assignmentError } = await supabase
+        .from('duty_assignments')
+        .select('primary_worker_id, backup_worker_id')
+        .eq('assignment_date', date);
+
+      if (assignmentError) {
+        console.error('Error fetching duty assignments:', assignmentError);
+        return null;
+      }
+
+      if (!assignments || assignments.length === 0) {
+        console.log('No duty assignment found for date:', date);
+        return null;
+      }
+
+      // 주 당직자의 정보를 가져옵니다
+      const assignment = assignments[0];
+      const { data: worker, error: workerError } = await supabase
+        .from('worker_list')
+        .select('이름')
+        .eq('일련번호', assignment.primary_worker_id)
+        .single();
+
+      if (workerError || !worker) {
+        console.error('Error fetching worker info:', workerError);
+        return null;
+      }
+
+      return {
+        worker_name: worker.이름
+      };
+    } catch (error) {
+      console.error('Error in getDutyWorkerByDate:', error);
+      return null;
+    }
   }
 };

@@ -282,6 +282,33 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          created_at: string
+          customer_name: string
+          id: string
+          order_date: string
+          status: string | null
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string
+          customer_name: string
+          id?: string
+          order_date?: string
+          status?: string | null
+          total_amount: number
+        }
+        Update: {
+          created_at?: string
+          customer_name?: string
+          id?: string
+          order_date?: string
+          status?: string | null
+          total_amount?: number
+        }
+        Relationships: []
+      }
       penalty_duties: {
         Row: {
           created_at: string
@@ -326,6 +353,78 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "worker_list"
             referencedColumns: ["일련번호"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
+      sales: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+          sale_date: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+          sale_date?: string
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+          sale_date?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
           },
         ]
       }

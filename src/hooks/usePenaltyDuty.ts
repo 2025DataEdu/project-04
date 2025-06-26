@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { PenaltyDutyWithWorker } from '@/types/penalty';
 import { penaltyDutyService } from '@/services/penaltyDutyService';
-import { dutyWorkerService } from '@/services/dutyWorkerService';
 import { workerService } from '@/services/workerService';
 import { penaltyEmailService } from '@/services/penaltyEmailService';
 import { penaltyDataUtils } from '@/utils/penaltyDataUtils';
@@ -12,7 +11,7 @@ export const usePenaltyDuty = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const getDutyWorkerByDate = async (date: string) => {
-    return dutyWorkerService.getDutyWorkerByDate(date);
+    return penaltyDutyService.getDutyWorkerByDate(date);
   };
 
   const createPenaltyDuty = async (penaltyData: {
@@ -28,9 +27,13 @@ export const usePenaltyDuty = () => {
       let reportedBy = penaltyData.reported_by || '';
       
       if (!reportedBy) {
+        console.log('Finding duty worker for date:', penaltyData.violation_date);
         const dutyWorker = await getDutyWorkerByDate(penaltyData.violation_date);
         if (dutyWorker && dutyWorker.worker_name) {
           reportedBy = dutyWorker.worker_name;
+          console.log('Found duty worker:', reportedBy);
+        } else {
+          console.log('No duty worker found for date:', penaltyData.violation_date);
         }
       }
 
@@ -39,6 +42,7 @@ export const usePenaltyDuty = () => {
         reported_by: reportedBy || '알 수 없음'
       };
 
+      console.log('Creating penalty duty with data:', finalPenaltyData);
       const result = await penaltyDutyService.createPenaltyDuty(finalPenaltyData);
 
       // 이메일 통보 기능 호출
