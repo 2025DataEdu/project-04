@@ -58,7 +58,14 @@ const DutyCalendar = () => {
   };
 
   const getAssignmentsForDate = (date: Date) => {
-    const dateString = date.toISOString().split('T')[0];
+    // 정확한 날짜 문자열 생성 (YYYY-MM-DD 형식)
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    
+    console.log(`Calendar date: ${dateString}, Reports found: ${assignments.filter(assignment => assignment.assignment_date === dateString).length}, Day: ${date.getDate()}`);
+    
     return assignments.filter(assignment => assignment.assignment_date === dateString);
   };
 
