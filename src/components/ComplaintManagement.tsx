@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useComplaints } from '@/hooks/useComplaints';
 import { toast } from 'sonner';
 import ComplaintHeader from './complaint/ComplaintHeader';
@@ -85,25 +85,21 @@ const ComplaintManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <ComplaintHeader 
-        isCreateDialogOpen={isCreateDialogOpen}
-        setIsCreateDialogOpen={setIsCreateDialogOpen}
-      >
-        <ComplaintCreateDialog
-          newComplaint={newComplaint}
-          setNewComplaint={setNewComplaint}
-          onCreateComplaint={handleCreateComplaint}
-          onCancel={handleCancelCreate}
-        />
-      </ComplaintHeader>
-
-      {/* 검색 및 필터 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>민원 목록</CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* 통합된 헤더와 목록 카드 */}
+      <Card className="shadow-lg border-0 bg-white">
+        <ComplaintHeader 
+          isCreateDialogOpen={isCreateDialogOpen}
+          setIsCreateDialogOpen={setIsCreateDialogOpen}
+        >
+          <ComplaintCreateDialog
+            newComplaint={newComplaint}
+            setNewComplaint={setNewComplaint}
+            onCreateComplaint={handleCreateComplaint}
+            onCancel={handleCancelCreate}
+          />
+        </ComplaintHeader>
+        
+        <CardContent className="p-6 pt-0">
           <ComplaintFilters
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
