@@ -16,13 +16,22 @@ export const useDutyReports = () => {
 
       console.log('Fetching duty reports for date range:', startDate, 'to', endDate);
 
-      // 당직 보고서 데이터를 조회
+      // assignment_id를 기준으로 정확한 매칭을 위해 조인 사용
       const { data: reportsData, error: reportsError } = await supabase
         .from('duty_reports')
-        .select('*')
+        .select(`
+          *,
+          duty_assignments!inner(
+            id,
+            assignment_date,
+            duty_type,
+            primary_worker_id,
+            backup_worker_id
+          )
+        `)
         .gte('report_date', startDate)
         .lte('report_date', endDate)
-        .order('report_date', { ascending: true }); // 날짜 순으로 정렬
+        .order('report_date', { ascending: true });
 
       if (reportsError) {
         console.error('Error fetching duty reports:', reportsError);
@@ -33,6 +42,7 @@ export const useDutyReports = () => {
       console.log(`Found ${reportsData?.length || 0} duty reports for ${year}-${month}`);
 
       if (!reportsData || reportsData.length === 0) {
+        setReports([]);
         return [];
       }
 
@@ -47,39 +57,29 @@ export const useDutyReports = () => {
         return [];
       }
 
-      // 당직 배정 정보 조회
-      const { data: assignments, error: assignmentsError } = await supabase
-        .from('duty_assignments')
-        .select('*')
-        .gte('assignment_date', startDate)
-        .lte('assignment_date', endDate);
-
-      if (assignmentsError) {
-        console.error('Error fetching duty assignments:', assignmentsError);
-      }
-
-      // 데이터 조합 - assignment_id를 사용하여 정확한 매칭
+      // 데이터 조합 - assignment_id를 통한 정확한 매칭
       const reportsWithWorker: DutyReportWithWorker[] = reportsData.map(report => {
-        // assignment_id로 정확한 당직 배정 찾기
-        const matchingAssignment = assignments?.find(a => a.id === report.assignment_id);
+        // assignment에서 가져온 정보 사용
+        const assignment = report.duty_assignments;
         
-        // duty_worker_id로 근로자 정보 찾기 (보고서에 직접 저장된 당직자 ID 사용)
+        // duty_worker_id로 근로자 정보 찾기
         const worker = workers?.find(w => w.일련번호 === report.duty_worker_id);
         
-        let assignmentInfo = undefined;
-        if (matchingAssignment) {
-          const primaryWorker = workers?.find(w => w.일련번호 === matchingAssignment.primary_worker_id);
-          const backupWorker = workers?.find(w => w.일련번호 === matchingAssignment.backup_worker_id);
-          
-          assignmentInfo = {
-            duty_type: matchingAssignment.duty_type,
-            primary_worker_name: primaryWorker?.이름 || '알 수 없음',
-            backup_worker_name: backupWorker?.이름 || '알 수 없음'
-          };
-        }
+        // 주당직자와 예비당직자 정보
+        const primaryWorker = workers?.find(w => w.일련번호 === assignment.primary_worker_id);
+        const backupWorker = workers?.find(w => w.일련번호 === assignment.backup_worker_id);
+        
+        const assignmentInfo = {
+          duty_type: assignment.duty_type,
+          primary_worker_name: primaryWorker?.이름 || '알 수 없음',
+          backup_worker_name: backupWorker?.이름 || '알 수 없음'
+        };
+
+        // duty_assignments 속성 제거하고 필요한 정보만 포함
+        const { duty_assignments, ...reportWithoutAssignment } = report;
 
         return {
-          ...report,
+          ...reportWithoutAssignment,
           worker_name: worker?.이름 || '알 수 없음',
           worker_department: worker?.소속부서 || '알 수 없음',
           assignment: assignmentInfo
@@ -107,10 +107,19 @@ export const useDutyReports = () => {
     try {
       console.log('Getting duty reports for date:', date);
       
-      // 해당 날짜의 모든 보고서를 조회 (single() 대신 여러 개 가능)
+      // assignment_id를 기준으로 정확한 매칭
       const { data: reportsData, error: reportsError } = await supabase
         .from('duty_reports')
-        .select('*')
+        .select(`
+          *,
+          duty_assignments!inner(
+            id,
+            assignment_date,
+            duty_type,
+            primary_worker_id,
+            backup_worker_id
+          )
+        `)
         .eq('report_date', date);
 
       if (reportsError) {
@@ -130,31 +139,25 @@ export const useDutyReports = () => {
         .from('worker_list')
         .select('*');
 
-      // 당직 배정 정보 조회
-      const { data: assignments } = await supabase
-        .from('duty_assignments')
-        .select('*')
-        .eq('assignment_date', date);
-
       // 각 보고서에 대해 근로자 정보와 배정 정보를 결합
       const reportsWithWorker: DutyReportWithWorker[] = reportsData.map(report => {
+        const assignment = report.duty_assignments;
         const worker = workers?.find(w => w.일련번호 === report.duty_worker_id);
-        const assignment = assignments?.find(a => a.id === report.assignment_id);
+        
+        const primaryWorker = workers?.find(w => w.일련번호 === assignment.primary_worker_id);
+        const backupWorker = workers?.find(w => w.일련번호 === assignment.backup_worker_id);
+        
+        const assignmentInfo = {
+          duty_type: assignment.duty_type,
+          primary_worker_name: primaryWorker?.이름 || '알 수 없음',
+          backup_worker_name: backupWorker?.이름 || '알 수 없음'
+        };
 
-        let assignmentInfo = undefined;
-        if (assignment) {
-          const primaryWorker = workers?.find(w => w.일련번호 === assignment.primary_worker_id);
-          const backupWorker = workers?.find(w => w.일련번호 === assignment.backup_worker_id);
-          
-          assignmentInfo = {
-            duty_type: assignment.duty_type,
-            primary_worker_name: primaryWorker?.이름 || '알 수 없음',
-            backup_worker_name: backupWorker?.이름 || '알 수 없음'
-          };
-        }
+        // duty_assignments 속성 제거
+        const { duty_assignments, ...reportWithoutAssignment } = report;
 
         return {
-          ...report,
+          ...reportWithoutAssignment,
           worker_name: worker?.이름 || '알 수 없음',
           worker_department: worker?.소속부서 || '알 수 없음',
           assignment: assignmentInfo
@@ -180,6 +183,6 @@ export const useDutyReports = () => {
     reports,
     fetchDutyReports,
     getDutyReportByDate,
-    getDutyReportsByDate // 새로운 함수 추가
+    getDutyReportsByDate
   };
 };
